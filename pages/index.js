@@ -16,20 +16,11 @@ export default function HomePage() {
     showCircle,
     phase,
     heroCollapsed,
-    pullY,
-    isSpringing,
     isCommitting,
   } = useScrollHeroTransition(trackRef, section2Ref);
 
   return (
-    <main
-      className={[
-        "home",
-        isSpringing ? "home--spring" : "",
-        pullY > 0 ? "home--pulling" : "",
-      ].join(" ")}
-      style={pullY > 0 ? { transform: `translateY(${pullY}px)` } : undefined}
-    >
+    <main className="home">
       {showCircle && (
         <div className="home-hero__circle-portal" aria-hidden="true">
           <span
@@ -81,7 +72,7 @@ export default function HomePage() {
           <div className="home-hero__body">
             <div
               className="home-hero__slogan"
-              style={{ transform: `scale(${scale})` }}
+              style={{ "--hero-text-scale": scale }}
             >
               <p className="home-hero__lead">We are</p>
               <p className="home-hero__words">
@@ -99,7 +90,7 @@ export default function HomePage() {
       <section
         className={[
           "home-intro",
-          isCommitting ? "home-intro--committing" : "",
+          heroCollapsed && isCommitting ? "home-intro--committing" : "",
           phase === "done" ? "home-intro--landed" : "",
         ].join(" ")}
         id="section-2"
