@@ -1,0 +1,45 @@
+---
+description: Preserve the Blankslate-style story scroll section — approved landing effect
+globs: pages/index.js,plugins/storyScrollLogic.js,styles/globals.css
+alwaysApply: true
+---
+
+# Story scroll effect (KEEP — user approved)
+
+The **home-story** scrollytelling section is the preferred audience/intro pattern for this site. Do not replace or regress it without explicit user request.
+
+## What to preserve
+
+- **Pinned scroll track**: `height: calc(var(--story-beats) * 100vh)` on `.home-story-track`
+- **Sticky viewport**: `.home-story` sticks at `top: var(--nav-h)` while the user scrolls through beats
+- **Sticky left video**: portrait reel with rounded corners; do not remove or shrink without reason
+- **Dashed rail + moving dot**: `.home-story__rail`, dashed `.home-story__line`, `.home-story__dot` driven by `dotProgress`
+- **One slide at a time**: only `.home-story__slide--active` visible on desktop; crossfade between beats
+- **Single page scroll**: no nested scroll containers inside the section
+- **Large display typography**: `.home-story__copy` / `.home-story__item` use `font-display`, ~`clamp(1.45rem, 2.65vw, 2.15rem)`
+
+## Implementation map
+
+| Piece | Location |
+|-------|----------|
+| Beats + markup | `pages/index.js` → `STORY_BEATS`, `.home-story-*` |
+| Scroll logic | `plugins/storyScrollLogic.js` → `useStoryScroll` |
+| Styles | `styles/globals.css` → `.home-story-*` block |
+
+## Beat sequence (reference)
+
+1. Welcome intro (brand bold + inline links)
+2. Situations lead-in
+3. Numbered situations 1–3
+4. Closing CTA with link
+5. Brand personality line
+
+## Static / mobile
+
+Below 901px or `prefers-reduced-motion`: `.home-story-track--static` — all beats stacked, no pin, no slide swap.
+
+## When extending
+
+- Add beats → update `STORY_BEATS`, `--story-beats` auto from length, keep one-viewport-per-beat scroll distance
+- Do not reintroduce dual scroll (fixed panel + `overflow-y: auto`)
+- Do not swap back to the old `home-audience` all-visible-dimmed timeline unless asked
