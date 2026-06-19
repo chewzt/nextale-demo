@@ -1,66 +1,59 @@
 import { useEffect, useState } from "react";
 
-const BEAT_COUNT = 4;
-const PINNED_MIN_WIDTH = 901;
+export const STORY_PINNED_MIN_WIDTH = 901;
 
-function clamp(value, min, max) {
+function storyClamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function getActiveStep(progress, itemCount) {
-  const beatSize = 1 / BEAT_COUNT;
-  if (progress >= (BEAT_COUNT - 1) * beatSize) {
-    return itemCount;
-  }
-  return Math.min(itemCount - 1, Math.floor(progress / beatSize));
-}
-
-function getStaticStyles(itemCount) {
+function getStoryStaticState(beatCount) {
   return {
-    lineFill: 1,
-    activeStep: itemCount,
+    activeBeat: Math.max(0, beatCount - 1),
+    dotProgress: 1,
+    beatFraction: 1,
     isStatic: true,
   };
 }
 
-function prefersReducedMotion() {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function isPinnedLayout() {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia(`(min-width: ${PINNED_MIN_WIDTH}px)`).matches;
-}
-
-export function useAudienceTimeline(trackRef, itemCount) {
-  const [state, setState] = useState(() => getStaticStyles(itemCount));
+export function useStoryScroll(trackRef, beatCount) {
+  const [state, setState] = useState(() => getStoryStaticState(beatCount));
 
   useEffect(() => {
     const track = trackRef.current;
-    if (!track) return undefined;
+    if (!track || beatCount < 1) return undefined;
 
     let rafId = null;
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const layoutQuery = window.matchMedia(`(min-width: ${PINNED_MIN_WIDTH}px)`);
+    const layoutQuery = window.matchMedia(
+      `(min-width: ${STORY_PINNED_MIN_WIDTH}px)`,
+    );
 
     const measure = () => {
-      if (!isPinnedLayout() || prefersReducedMotion()) {
-        setState(getStaticStyles(itemCount));
+      const pinned = layoutQuery.matches && !motionQuery.matches;
+
+      if (!pinned) {
+        setState(getStoryStaticState(beatCount));
         return;
       }
 
       const trackTop = track.offsetTop;
       const scrollable = Math.max(track.offsetHeight - window.innerHeight, 1);
-      const progress = clamp(
+      const progress = storyClamp(
         (window.scrollY - trackTop) / scrollable,
         0,
         1,
       );
+      const activeBeat = Math.min(
+        beatCount - 1,
+        Math.floor(progress * beatCount),
+      );
+      const dotProgress = beatCount <= 1 ? 0 : activeBeat / (beatCount - 1);
+      const beatFraction = storyClamp(progress * beatCount - activeBeat, 0, 1);
 
       setState({
-        lineFill: progress,
-        activeStep: getActiveStep(progress, itemCount),
+        activeBeat,
+        dotProgress,
+        beatFraction,
         isStatic: false,
       });
     };
@@ -95,7 +88,7 @@ export function useAudienceTimeline(trackRef, itemCount) {
       resizeObserver?.disconnect();
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [trackRef, itemCount]);
+  }, [trackRef, beatCount]);
 
   return state;
 }

@@ -1,40 +1,565 @@
-export default function ServicesPage() {
-  return (
-    <main className="page page--services">
-      <header className="page-header">
-        <p className="page-header__eyebrow">What we do</p>
-        <h1 className="page-header__title">Services</h1>
-        <p className="page-header__lead">
-          Strategy, content, and production — built for brands that need to move
-          fast without sacrificing craft.
-        </p>
-      </header>
+import Image from "next/image";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import socialReel from "../assets/landing-mobile-video.mp4";
+import desktopVideo from "../assets/landing-desktop-video.mp4";
+import brandShot1 from "../assets/services/brand-identity/brand-01.png";
+import brandShot2 from "../assets/services/brand-identity/brand-02.png";
+import brandShot3 from "../assets/services/brand-identity/brand-03.png";
+import photo01 from "../assets/services/productpicture/photo-01.png";
+import photo02 from "../assets/services/productpicture/photo-02.jpg";
+import photo03 from "../assets/services/productpicture/photo-03.jpg";
+import photo04 from "../assets/services/productpicture/photo-04.jpg";
+import photo05 from "../assets/services/productpicture/photo-05.jpg";
+import photo06 from "../assets/services/productpicture/photo-06.png";
+import photo07 from "../assets/services/productpicture/photo-07.jpg";
+import photo08 from "../assets/services/productpicture/photo-08.jpg";
+import photo09 from "../assets/services/productpicture/photo-09.jpg";
+import photo10 from "../assets/services/productpicture/photo-10.jpg";
+import photo11 from "../assets/services/productpicture/photo-11.jpg";
+import photo12 from "../assets/services/productpicture/photo-12.png";
+import photo13 from "../assets/services/productpicture/photo-13.png";
+import photo14 from "../assets/services/productpicture/photo-14.png";
+import photo15 from "../assets/services/productpicture/photo-15.png";
+import { useStoryScroll } from "../plugins/useStoryScroll";
 
-      <section className="services-grid">
-        <article className="services-card">
-          <span className="services-card__num">01</span>
-          <h2 className="services-card__title">Social Media Management</h2>
-          <p className="services-card__body">
-            Planning, publishing, and community — we keep your channels active
-            and on-brand.
-          </p>
+const CATEGORY_LABEL = "Creative";
+
+const SERVICES_BEATS = [
+  {
+    id: "brand",
+    folder: "brand-identity",
+    num: "01",
+    title: "Brand & Identity",
+    body: "Names, visual identity, and brand systems that help businesses stand out from day one.",
+    images: [
+      {
+        src: brandShot1,
+        label: "Logo",
+        slot: "tl",
+        calloutSide: "left",
+      },
+      {
+        src: brandShot2,
+        label: "Color Scheme",
+        slot: "bc",
+        calloutSide: "top",
+      },
+      {
+        src: brandShot3,
+        label: "Business Card",
+        slot: "tr",
+        calloutSide: "right",
+      },
+    ],
+  },
+  {
+    id: "social",
+    type: "social",
+    folder: "social-media",
+    num: "02",
+    title: "Social Media Marketing",
+    body: "Strategy, always-on content, and community management that builds genuine followings.",
+    reels: [
+      { id: "reel-1", src: socialReel, label: "Reel 01" },
+      { id: "reel-2", src: socialReel, label: "Reel 02" },
+      { id: "reel-3", src: socialReel, label: "Reel 03" },
+    ],
+    images: [],
+  },
+  {
+    id: "video",
+    type: "video",
+    folder: "video-production",
+    num: "03",
+    title: "Video Production",
+    body: "Brief to final cut — brand films, product videos, platform-native storytelling, in-house.",
+    videos: [
+      { id: "v1", src: desktopVideo, label: "Brand Film" },
+      { id: "v2", src: desktopVideo, label: "Product Video" },
+      { id: "v3", src: desktopVideo, label: "Wedding Reel" },
+    ],
+    images: [],
+  },
+  {
+    id: "photo",
+    type: "photo",
+    folder: "product-photography",
+    num: "04",
+    title: "Product Photography",
+    body: "Studio-quality imagery and lifestyle shots built for e-commerce, social, and campaigns.",
+    photos: [
+      { id: "p01", src: photo01 },
+      { id: "p02", src: photo02 },
+      { id: "p03", src: photo03 },
+      { id: "p04", src: photo04 },
+      { id: "p05", src: photo05 },
+      { id: "p06", src: photo06 },
+      { id: "p07", src: photo07 },
+      { id: "p08", src: photo08 },
+      { id: "p09", src: photo09 },
+      { id: "p10", src: photo10 },
+      { id: "p11", src: photo11 },
+      { id: "p12", src: photo12 },
+      { id: "p13", src: photo13 },
+      { id: "p14", src: photo14 },
+      { id: "p15", src: photo15 },
+    ],
+    images: [],
+  },
+  {
+    id: "ui",
+    folder: "ui-ux",
+    num: "05",
+    title: "UI/UX Design",
+    body: "Interfaces designed around how your customers actually think — clean, purposeful, built to convert.",
+    images: [],
+  },
+];
+
+function hasMosaicLayout(images) {
+  return (
+    images.length === 3 &&
+    images.every((item) => item.src && item.slot && item.calloutSide)
+  );
+}
+
+const ARROW_VIEWBOX = "0 0 375.01 375.01";
+
+const ARROW_BODY_PATH =
+  "M330.254,210.966c-56.916,1.224-110.16,25.704-167.076,28.764c-16.524,0.612-33.048-1.224-45.9-8.568c23.256-4.283,45.288-12.239,61.812-27.54c17.749-15.911,19.584-45.287,8.568-66.095c-10.404-19.584-36.72-20.196-55.08-15.3C89.125,132.63,59.75,184.65,84.229,221.369c-26.928,1.836-53.856,0-80.172,1.225c-5.508,0.611-5.508,8.567,0.612,8.567c26.928,1.836,59.364,4.284,91.188,2.448c1.836,1.225,3.672,3.061,5.508,4.284c64.872,45.288,159.732-11.628,229.5-13.464C338.821,223.817,338.821,210.354,330.254,210.966z M89.737,196.277c-6.732-25.091,15.3-46.511,35.496-56.916c20.196-10.404,48.96-10.404,55.692,15.912c7.956,30.6-18.36,48.959-43.452,56.916c-11.628,3.672-22.644,6.12-34.272,7.344C96.47,213.413,92.186,206.069,89.737,196.277z";
+
+const ARROW_HEAD_PATH =
+  "M371.869,211.577c-8.567-5.508-16.523-11.016-24.479-16.523c-6.732-4.896-13.464-10.404-21.42-12.24c-6.12-1.836-12.24,7.344-6.732,11.627c6.732,4.896,14.076,9.18,20.809,13.464c4.896,3.061,9.792,6.732,14.075,9.792c-4.896,2.448-9.792,4.284-14.688,6.732c-3.672,1.836-7.956,3.672-11.628,5.508c-1.224,0.612-2.448,1.836-3.061,3.06c-1.836,2.448-0.611,1.225,0,0.612c-2.447,1.836-2.447,7.956,1.837,7.344l0,0c1.224,0.612,2.447,0.612,4.283,0.612c4.284-1.224,9.181-3.06,13.464-4.896c9.181-3.673,18.36-7.345,26.929-12.24C376.153,220.758,376.153,214.025,371.869,211.577z";
+
+function ServiceCalloutArrow({ side }) {
+  return (
+    <svg
+      className={`svc-story__callout-arrow svc-story__callout-arrow--${side}`}
+      viewBox={ARROW_VIEWBOX}
+      aria-hidden="true"
+    >
+      <path className="svc-story__callout-arrow-body" d={ARROW_BODY_PATH} />
+      <path className="svc-story__callout-arrow-head" d={ARROW_HEAD_PATH} />
+    </svg>
+  );
+}
+
+function SocialReelStrip({ beat, isActive }) {
+  const [activeIndex, setActiveIndex] = useState(null);
+  const videoRefs = useRef([]);
+
+  useEffect(() => {
+    if (!isActive) {
+      videoRefs.current.forEach((video) => video?.pause());
+      setActiveIndex(null);
+    } else {
+      setActiveIndex(0);
+      videoRefs.current[0]?.play().catch(() => {});
+    }
+  }, [isActive]);
+
+  const expand = (index) => {
+    if (!isActive) return;
+
+    videoRefs.current.forEach((video, i) => {
+      if (video && i !== index) video.pause();
+    });
+    setActiveIndex(index);
+    videoRefs.current[index]?.play().catch(() => {});
+  };
+
+  const collapse = (index) => {
+    const video = videoRefs.current[index];
+    if (video) video.pause();
+    setActiveIndex(null);
+  };
+
+  const toggle = (index) => {
+    if (activeIndex === index) collapse(index);
+    else expand(index);
+  };
+
+  return (
+    <div
+      className={[
+        "svc-reels",
+        activeIndex !== null ? "svc-reels--expanded" : "",
+      ].join(" ")}
+      aria-hidden="true"
+    >
+      {beat.reels.map((reel, index) => (
+        <article
+          key={reel.id}
+          className={[
+            "svc-reels__item",
+            activeIndex === index ? "svc-reels__item--active" : "",
+          ].join(" ")}
+          onMouseEnter={() => expand(index)}
+          onClick={() => toggle(index)}
+        >
+          <video
+            ref={(element) => {
+              videoRefs.current[index] = element;
+            }}
+            className="svc-reels__video"
+            src={reel.src}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          />
         </article>
-        <article className="services-card">
-          <span className="services-card__num">02</span>
-          <h2 className="services-card__title">Content Creation</h2>
-          <p className="services-card__body">
-            Photography, reels, and copy tailored to how your audience actually
-            scrolls.
+      ))}
+    </div>
+  );
+}
+
+function VideoCarousel({ beat, isActive }) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRefs = useRef([]);
+  const viewportRef = useRef(null);
+  const trackRef = useRef(null);
+  const isScrubbing = useRef(false);
+
+  const count = beat.videos.length;
+
+  useLayoutEffect(() => {
+    const centerActiveSlide = () => {
+      const viewport = viewportRef.current;
+      const track = trackRef.current;
+      if (!viewport || !track) return;
+
+      const slide = track.children[activeIdx];
+      if (!slide) return;
+
+      const offset =
+        slide.offsetLeft + slide.offsetWidth / 2 - viewport.clientWidth / 2;
+      track.style.transform = `translateX(-${offset}px)`;
+    };
+
+    centerActiveSlide();
+    window.addEventListener("resize", centerActiveSlide);
+    return () => window.removeEventListener("resize", centerActiveSlide);
+  }, [activeIdx]);
+
+  useEffect(() => {
+    videoRefs.current.forEach((video, index) => {
+      if (!video) return;
+      if (!isActive || index !== activeIdx) {
+        video.pause();
+      }
+    });
+
+    if (!isActive) {
+      setIsPlaying(false);
+      setProgress(0);
+      return;
+    }
+
+    const video = videoRefs.current[activeIdx];
+    if (!video) return;
+
+    video.currentTime = 0;
+    setProgress(0);
+    video.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+  }, [isActive, activeIdx]);
+
+  const handleTimeUpdate = () => {
+    if (isScrubbing.current) return;
+    const video = videoRefs.current[activeIdx];
+    if (video?.duration) setProgress(video.currentTime / video.duration);
+  };
+
+  const handleSeek = (event) => {
+    const value = parseFloat(event.target.value);
+    setProgress(value);
+    const video = videoRefs.current[activeIdx];
+    if (video?.duration) video.currentTime = value * video.duration;
+  };
+
+  const togglePlay = () => {
+    const video = videoRefs.current[activeIdx];
+    if (!video) return;
+
+    if (video.paused) {
+      video.play().then(() => setIsPlaying(true)).catch(() => {});
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const goPrev = () => {
+    setActiveIdx((index) => (index - 1 + count) % count);
+  };
+
+  const goNext = () => {
+    setActiveIdx((index) => (index + 1) % count);
+  };
+
+  return (
+    <div className="svc-video-carousel" aria-hidden="true">
+      <div className="svc-video-carousel__viewport" ref={viewportRef}>
+        <div className="svc-video-carousel__track" ref={trackRef}>
+          {beat.videos.map((video, index) => (
+            <article
+              key={video.id}
+              className={[
+                "svc-video-carousel__slide",
+                index === activeIdx ? "svc-video-carousel__slide--active" : "",
+              ].join(" ")}
+            >
+              <div className="svc-video-carousel__frame">
+                <video
+                  ref={(element) => {
+                    videoRefs.current[index] = element;
+                  }}
+                  className="svc-video-carousel__video"
+                  src={video.src}
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  onTimeUpdate={
+                    index === activeIdx ? handleTimeUpdate : undefined
+                  }
+                  onPlay={
+                    index === activeIdx ? () => setIsPlaying(true) : undefined
+                  }
+                  onPause={
+                    index === activeIdx ? () => setIsPlaying(false) : undefined
+                  }
+                  onClick={index === activeIdx ? togglePlay : undefined}
+                />
+
+                {index === activeIdx && !isPlaying ? (
+                  <button
+                    type="button"
+                    className="svc-video-carousel__play"
+                    onClick={togglePlay}
+                    aria-label="Play video"
+                  />
+                ) : null}
+
+                {index === activeIdx ? (
+                  <div className="svc-video-carousel__timeline-wrap">
+                    <input
+                      type="range"
+                      className="svc-video-carousel__timeline"
+                      min={0}
+                      max={1}
+                      step={0.001}
+                      value={progress}
+                      onChange={handleSeek}
+                      onPointerDown={() => {
+                        isScrubbing.current = true;
+                      }}
+                      onPointerUp={() => {
+                        isScrubbing.current = false;
+                      }}
+                      aria-label="Video timeline"
+                    />
+                  </div>
+                ) : null}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className="svc-video-carousel__arrow svc-video-carousel__arrow--prev"
+          onClick={goPrev}
+          aria-label="Previous video"
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          className="svc-video-carousel__arrow svc-video-carousel__arrow--next"
+          onClick={goNext}
+          aria-label="Next video"
+        >
+          ›
+        </button>
+      </div>
+
+      <div className="svc-video-carousel__dots">
+        {beat.videos.map((video, index) => (
+          <button
+            key={video.id}
+            type="button"
+            className={[
+              "svc-video-carousel__dot",
+              index === activeIdx ? "svc-video-carousel__dot--active" : "",
+            ].join(" ")}
+            onClick={() => setActiveIdx(index)}
+            aria-label={`Show ${video.label ?? `video ${index + 1}`}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProductPhotoGrid({ photos }) {
+  return (
+    <div className="svc-photo-grid" aria-hidden="true">
+      {photos.map((photo) => (
+        <figure key={photo.id} className="svc-photo-grid__item">
+          <Image
+            src={photo.src}
+            alt=""
+            className="svc-photo-grid__img"
+            fill
+            sizes="20vw"
+          />
+        </figure>
+      ))}
+    </div>
+  );
+}
+
+export default function ServicesPage() {
+  const trackRef = useRef(null);
+  const { activeBeat, dotProgress, isStatic } = useStoryScroll(
+    trackRef,
+    SERVICES_BEATS.length,
+  );
+
+  return (
+    <main className="page-services">
+      <section className="home-intro" aria-label="Services introduction">
+        <div className="home-intro__inner">
+          <p className="home-intro__eyebrow">Our services</p>
+          <h1 className="home-intro__headline">
+            Everything your brand needs, under one roof.
+          </h1>
+          <p className="home-intro__body">
+            From strategy and identity to content, code, and campaigns — Nextale
+            runs creative and technology together so nothing gets lost in
+            translation.
           </p>
-        </article>
-        <article className="services-card">
-          <span className="services-card__num">03</span>
-          <h2 className="services-card__title">Video Production</h2>
-          <p className="services-card__body">
-            Concept through final cut — campaign films, product videos, and
-            platform-native storytelling.
-          </p>
-        </article>
+        </div>
+      </section>
+
+      <section
+        className={[
+          "svc-story-track",
+          isStatic ? "svc-story-track--static" : "",
+        ].join(" ")}
+        aria-label="Creative services"
+        ref={trackRef}
+        style={{ "--story-beats": SERVICES_BEATS.length }}
+      >
+        <div className="svc-story">
+          <div className="svc-story__layout">
+            <p className="svc-story__category-label">{CATEGORY_LABEL}</p>
+
+            <div className="home-story__rail svc-story__rail" aria-hidden="true">
+              <span className="home-story__line" />
+              <span
+                className="home-story__dot"
+                style={{ top: `${dotProgress * 100}%` }}
+              />
+            </div>
+
+            <div className="svc-story__slides">
+              {SERVICES_BEATS.map((beat, index) => (
+                <article
+                  key={beat.id}
+                  className={[
+                    "svc-story__slide",
+                    `svc-story__slide--${beat.id}`,
+                    !isStatic && activeBeat === index
+                      ? "svc-story__slide--active"
+                      : "",
+                    isStatic ? "svc-story__slide--static" : "",
+                  ].join(" ")}
+                >
+                  <div className="svc-story__header">
+                    <span className="svc-story__num">{beat.num}</span>
+                    <div className="svc-story__copy">
+                      <h2 className="svc-story__title">{beat.title}</h2>
+                      <p className="svc-story__body">{beat.body}</p>
+                    </div>
+                  </div>
+
+                  {beat.type === "social" ? (
+                    <SocialReelStrip
+                      beat={beat}
+                      isActive={!isStatic && activeBeat === index}
+                    />
+                  ) : null}
+
+                  {beat.type === "video" ? (
+                    <VideoCarousel
+                      beat={beat}
+                      isActive={!isStatic && activeBeat === index}
+                    />
+                  ) : null}
+
+                  {beat.type === "photo" ? (
+                    <ProductPhotoGrid photos={beat.photos} />
+                  ) : null}
+
+                  {beat.images?.length > 0 ? (
+                    <div
+                      className={[
+                        "svc-story__visuals",
+                        hasMosaicLayout(beat.images)
+                          ? "svc-story__visuals--mosaic"
+                          : "",
+                      ].join(" ")}
+                      aria-hidden="true"
+                    >
+                      {beat.images.map((item, imageIndex) => (
+                        <figure
+                          key={imageIndex}
+                          className={[
+                            "svc-story__visual-item",
+                            item.slot
+                              ? `svc-story__visual-item--${item.slot}`
+                              : "",
+                          ].join(" ")}
+                          style={{
+                            "--shot-delay": `${imageIndex * 0.12}s`,
+                          }}
+                        >
+                          {item.label ? (
+                            <figcaption
+                              className={[
+                                "svc-story__callout",
+                                item.calloutSide
+                                  ? `svc-story__callout--${item.calloutSide}`
+                                  : "",
+                              ].join(" ")}
+                            >
+                              <span className="svc-story__callout-label">
+                                {item.label}
+                              </span>
+                              {item.calloutSide ? (
+                                <ServiceCalloutArrow side={item.calloutSide} />
+                              ) : null}
+                            </figcaption>
+                          ) : null}
+                          <Image
+                            src={item.src ?? item}
+                            alt=""
+                            className="svc-story__shot"
+                            sizes="(max-width: 900px) 45vw, 280px"
+                          />
+                        </figure>
+                      ))}
+                    </div>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
       </section>
     </main>
   );

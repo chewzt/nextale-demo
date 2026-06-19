@@ -1,6 +1,6 @@
 ---
 description: Preserve the Blankslate-style story scroll section — approved landing effect
-globs: pages/index.js,plugins/storyScrollLogic.js,styles/globals.css
+globs: pages/index.js,styles/globals.css
 alwaysApply: true
 ---
 
@@ -23,7 +23,8 @@ The **home-story** scrollytelling section is the preferred audience/intro patter
 | Piece | Location |
 |-------|----------|
 | Beats + markup | `pages/index.js` → `STORY_BEATS`, `.home-story-*` |
-| Scroll logic | `plugins/storyScrollLogic.js` → `useStoryScroll` |
+| Scroll logic | `pages/index.js` → `useStoryScroll` (inline) |
+| Hero scroll logic | `pages/index.js` → `useScrollHeroTransition` (inline) |
 | Styles | `styles/globals.css` → `.home-story-*` block |
 
 ## Beat sequence (reference)
@@ -42,4 +43,4 @@ Below 901px or `prefers-reduced-motion`: `.home-story-track--static` — all bea
 
 - Add beats → update `STORY_BEATS`, `--story-beats` auto from length, keep one-viewport-per-beat scroll distance
 - Do not reintroduce dual scroll (fixed panel + `overflow-y: auto`)
-- Do not swap back to the old `home-audience` all-visible-dimmed timeline unless asked
+- Landing-page-only logic stays in `pages/index.js` until a second page needs it

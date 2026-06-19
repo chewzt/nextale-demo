@@ -1,9 +1,21 @@
 import { useCallback, useState } from "react";
 
+export const SERVICES_OPTIONS = [
+  "Branding",
+  "Social Media",
+  "Video / Photo",
+  "UI/UX Design",
+  "Website",
+  "Mobile App",
+  "System Dev",
+];
+
 const INITIAL_FIELDS = {
   name: "",
   email: "",
   company: "",
+  budget: "",
+  services: [],
   message: "",
 };
 
@@ -45,6 +57,15 @@ export function useContactForm() {
     });
   }, []);
 
+  const handleServicesToggle = useCallback((value) => {
+    setFields((prev) => ({
+      ...prev,
+      services: prev.services.includes(value)
+        ? prev.services.filter((service) => service !== value)
+        : [...prev.services, value],
+    }));
+  }, []);
+
   const submit = useCallback(
     async (event) => {
       event.preventDefault();
@@ -57,7 +78,7 @@ export function useContactForm() {
       setStatus("submitting");
       await new Promise((resolve) => setTimeout(resolve, 1400));
       setStatus("success");
-      setFields(INITIAL_FIELDS);
+      setFields({ ...INITIAL_FIELDS, services: [] });
     },
     [fields]
   );
@@ -69,6 +90,7 @@ export function useContactForm() {
     isSubmitting: status === "submitting",
     isSuccess: status === "success",
     handleChange,
+    handleServicesToggle,
     submit,
   };
 }
