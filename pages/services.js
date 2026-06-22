@@ -118,6 +118,8 @@ const SERVICES_BEATS = [
   },
 ];
 
+const PHOTO_BEAT_INDEX = SERVICES_BEATS.findIndex((beat) => beat.id === "photo");
+
 const CREATIVE_PROCESS_STEPS = [
   {
     num: "01",
@@ -200,6 +202,69 @@ const TECHNOLOGY_PROCESS_STEPS = [
     tags: ["Deployment", "Handoff", "Monitoring", "Maintenance", "Iterations"],
   },
 ];
+
+const SERVICES_FAQ = [
+  {
+    id: "creative-vs-tech",
+    question:
+      "What's the difference between your Creative and Technology services?",
+    answer:
+      "Creative covers brand identity, social content, photo, and video — everything your audience sees and engages with. Technology covers websites, mobile apps, custom systems, and automation — the tools that power your business behind the scenes. Many clients work with us on both so creative and tech stay aligned from day one.",
+  },
+  {
+    id: "single-service",
+    question:
+      "Can we hire you for just one service, or do we need the full package?",
+    answer:
+      "You can start with a single deliverable — a logo refresh, a product shoot, or a landing page — without committing to a full engagement. We're equally happy to scope a combined creative and technology project when that's what you need.",
+  },
+  {
+    id: "get-started",
+    question: "How do we get started?",
+    answer:
+      "Fill out the contact form with a short brief and we'll reply within one business day. From there we schedule a discovery call, align on goals and scope, and send a clear proposal before any work begins.",
+  },
+  {
+    id: "timeline",
+    question: "What does a typical project timeline look like?",
+    answer:
+      "Timelines depend on scope. Branding projects often run two to four weeks; websites typically four to eight weeks; apps and custom systems vary based on complexity. We set realistic dates at kickoff and keep you updated at every milestone.",
+  },
+  {
+    id: "who-we-work-with",
+    question: "Do you work with startups and established brands?",
+    answer:
+      "Yes — we work with early-stage founders building their first identity and with established teams scaling content, campaigns, or internal tools. The process adjusts to your stage, but the standard of work stays the same.",
+  },
+  {
+    id: "revisions",
+    question: "How many revision rounds are included?",
+    answer:
+      "Revision rounds are agreed in your proposal based on the deliverable — typically two to three structured rounds per major milestone. We collect feedback in clear checkpoints so revisions stay focused and on schedule.",
+  },
+  {
+    id: "ownership",
+    question: "Who owns the final files and code?",
+    answer:
+      "You do. On final payment, all deliverables — design files, source code, and assets — are handed over for your full use. We don't retain rights to your work unless we agree otherwise in writing.",
+  },
+  {
+    id: "pricing",
+    question: "How is pricing structured?",
+    answer:
+      "Every project is quoted from scope — no hidden fees. We provide a transparent breakdown of what's included before you sign off, and flag any changes that would affect cost before proceeding.",
+  },
+];
+
+const PORTFOLIO_HREF = "/work";
+
+function SvcPortfolioStrip({ children }) {
+  return (
+    <div className="svc-portfolio-strip">
+      <p className="svc-portfolio-strip__text">{children}</p>
+    </div>
+  );
+}
 
 function hasMosaicLayout(images) {
   return (
@@ -596,6 +661,71 @@ function ServiceProcessCard({ steps, cardRef, visible, ariaLabel }) {
   );
 }
 
+function ServicesFaq() {
+  const [openId, setOpenId] = useState(null);
+
+  const toggle = (id) => {
+    setOpenId((prev) => (prev === id ? null : id));
+  };
+
+  return (
+    <section className="svc-faq" aria-label="Frequently asked questions">
+      <div className="svc-faq__inner">
+        <div className="svc-faq__heading">
+          <h2 className="svc-faq__title">Frequently asked questions</h2>
+          <div className="svc-faq__aside">
+            <p className="svc-faq__aside-text">
+              Interested? See our work before you kick off.
+            </p>
+            <Link href={PORTFOLIO_HREF} className="btn btn--dark svc-faq__aside-cta">
+              View portfolio
+            </Link>
+          </div>
+        </div>
+
+        <div className="svc-faq__list">
+          {SERVICES_FAQ.map((item) => {
+            const isOpen = openId === item.id;
+            const panelId = `faq-panel-${item.id}`;
+
+            return (
+              <div
+                key={item.id}
+                className={[
+                  "svc-faq__item",
+                  isOpen ? "svc-faq__item--open" : "",
+                ].join(" ")}
+              >
+                <button
+                  type="button"
+                  className="svc-faq__trigger"
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  onClick={() => toggle(item.id)}
+                >
+                  <span className="svc-faq__question">{item.question}</span>
+                  <span className="svc-faq__icon" aria-hidden="true" />
+                </button>
+
+                <div
+                  id={panelId}
+                  className="svc-faq__panel"
+                  role="region"
+                  aria-hidden={!isOpen}
+                >
+                  <div className="svc-faq__panel-inner">
+                    <p className="svc-faq__answer">{item.answer}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function ServicesPage() {
   const trackRef = useRef(null);
   const techTrackRef = useRef(null);
@@ -610,6 +740,13 @@ export default function ServicesPage() {
     dotProgress: techDotProgress,
     isStatic: techIsStatic,
   } = useStoryScroll(techTrackRef, TECHNOLOGY_BEATS.length);
+  const [portfolioCtaShown, setPortfolioCtaShown] = useState(false);
+
+  useEffect(() => {
+    if (isStatic || activeBeat >= PHOTO_BEAT_INDEX) {
+      setPortfolioCtaShown(true);
+    }
+  }, [activeBeat, isStatic]);
 
   return (
     <main className="page-services">
@@ -638,7 +775,21 @@ export default function ServicesPage() {
       >
         <div className="svc-story">
           <div className="svc-story__layout">
-            <p className="svc-story__category-label">{CATEGORY_LABEL}</p>
+            <div className="svc-story__category-col">
+              <p className="svc-story__category-label">{CATEGORY_LABEL}</p>
+              <p
+                className={[
+                  "svc-story__portfolio-cta",
+                  portfolioCtaShown ? "svc-story__portfolio-cta--visible" : "",
+                ].join(" ")}
+                aria-hidden={!portfolioCtaShown && !isStatic}
+              >
+                Curious what we&apos;ve made?{" "}
+                <Link href={PORTFOLIO_HREF} className="home-story__inline-link">
+                  See our work
+                </Link>
+              </p>
+            </div>
 
             <div className="home-story__rail svc-story__rail" aria-hidden="true">
               <span className="home-story__line" />
@@ -804,12 +955,21 @@ export default function ServicesPage() {
         </div>
       </section>
 
+      <SvcPortfolioStrip>
+        Want to see it in practice?{" "}
+        <Link href={PORTFOLIO_HREF} className="home-story__inline-link">
+          Browse our portfolio
+        </Link>
+      </SvcPortfolioStrip>
+
       <ServiceProcessCard
         steps={TECHNOLOGY_PROCESS_STEPS}
         cardRef={techProcess.cardRef}
         visible={techProcess.visible}
         ariaLabel="Technology process"
       />
+
+      <ServicesFaq />
     </main>
   );
 }

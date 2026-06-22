@@ -1,74 +1,275 @@
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import desktopVideo from "../assets/landing-desktop-video.mp4";
+import demoStillA from "../assets/services/productpicture/photo-13.jpg";
+import demoStillC from "../assets/services/productpicture/photo-01.jpg";
 
-const TABS = [
-  "Videos",
-  "Fashion",
-  "Socials",
-  "Events",
-  "Design",
-  "Food",
-  "Livestreams",
+function demoHeroDuoMedia(prefix) {
+  return [
+    { id: `${prefix}-hero`, type: "video", slot: "hero", src: desktopVideo },
+    { id: `${prefix}-stack-a`, type: "image", slot: "stack-a", src: demoStillA },
+    { id: `${prefix}-stack-b`, type: "image", slot: "stack-b", src: demoStillC },
+  ];
+}
+
+const WORK_PROJECTS = [
+  {
+    id: "meridian-coffee",
+    title: "Meridian Coffee",
+    tags: ["Brand & Identity", "Product Photography"],
+    description:
+      "Placeholder — brand identity and product imagery for a specialty coffee launch.",
+    mediaLayout: "hero-duo",
+    media: demoHeroDuoMedia("meridian"),
+  },
+  {
+    id: "brightwave-health",
+    title: "Brightwave Health",
+    tags: ["Video Production", "Web Development"],
+    description:
+      "Placeholder — brand film and marketing site for a digital health platform.",
+    mediaLayout: "hero-duo",
+    media: demoHeroDuoMedia("brightwave"),
+  },
+  {
+    id: "heimdall-labs",
+    title: "Heimdall Labs",
+    tags: ["System Development", "Automation & APIs"],
+    description:
+      "Placeholder — custom operations platform replacing manual workflows.",
+    mediaLayout: "hero-duo",
+    media: demoHeroDuoMedia("heimdall"),
+  },
+  {
+    id: "rainfall-ventures",
+    title: "Rainfall Ventures",
+    tags: ["Brand & Identity", "Social Media Marketing"],
+    description:
+      "Placeholder — visual identity and always-on social for a venture fund.",
+    mediaLayout: "hero-duo",
+    media: demoHeroDuoMedia("rainfall"),
+  },
+  {
+    id: "space-capital",
+    title: "Space Capital",
+    tags: ["Web Development", "Mobile Apps"],
+    description:
+      "Placeholder — responsive web experience and companion mobile app.",
+    mediaLayout: "hero-duo",
+    media: demoHeroDuoMedia("space"),
+  },
+  {
+    id: "goodroots-homes",
+    title: "GoodRoots Homes",
+    tags: ["Brand & Identity", "Web Development"],
+    description:
+      "Placeholder — rebrand and storefront for a shared-equity housing startup.",
+    mediaLayout: "hero-duo",
+    media: demoHeroDuoMedia("goodroots"),
+  },
+  {
+    id: "cula-carbon",
+    title: "Cula Carbon",
+    tags: ["Product Photography", "Video Production"],
+    description:
+      "Placeholder — product visuals and explainer video for a climate tech company.",
+    mediaLayout: "hero-duo",
+    media: demoHeroDuoMedia("cula"),
+  },
+  {
+    id: "analog-way",
+    title: "Analog Way",
+    tags: ["Social Media Marketing", "Video Production", "Mobile Apps"],
+    description:
+      "Placeholder — social campaigns, short-form video, and app launch content.",
+    mediaLayout: "hero-duo",
+    media: demoHeroDuoMedia("analog"),
+  },
 ];
 
-export default function WorkPage() {
-  const [activeTab, setActiveTab] = useState(0);
-  const [page, setPage] = useState(0);
-  const pages = 5;
+function WorkHero() {
+  return (
+    <section className="home-intro" aria-label="Portfolio introduction">
+      <div className="home-intro__inner">
+        <p className="home-intro__eyebrow">Our work</p>
+        <h1 className="home-intro__headline">
+          Everything from identity to launch — selected work from the Nextale
+          studio.
+        </h1>
+        <p className="home-intro__body">
+          Creative and technology projects built with intention, craft, and a
+          clear point of view.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function WorkMediaTile({ item, isActive }) {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || item.type !== "video") return undefined;
+
+    if (isActive) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+
+    return undefined;
+  }, [isActive, item.type]);
+
+  if (item.type === "video") {
+    return (
+      <video
+        ref={videoRef}
+        className="work-gallery__video"
+        src={item.src}
+        muted
+        loop
+        playsInline
+        aria-hidden="true"
+      />
+    );
+  }
+
+  if (item.type === "image") {
+    const imageSrc = typeof item.src === "string" ? item.src : item.src.src;
+
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={imageSrc} alt="" className="work-gallery__img" loading="lazy" />
+    );
+  }
+
+  return <div className="work-gallery__placeholder" aria-hidden="true" />;
+}
+
+function WorkProjectGallery({ layout, media, isActive }) {
+  const hero = media.find((item) => item.slot === "hero");
+  const stacks = media.filter((item) => item.slot?.startsWith("stack"));
 
   return (
-    <main className="page page--work">
-      <header className="portfolio-header">
-        <h1 className="portfolio-header__title">Portfolio</h1>
-        <nav className="portfolio-tabs" aria-label="Portfolio categories">
-          {TABS.map((tab, index) => (
-            <button
-              key={tab}
-              type="button"
-              className={[
-                "portfolio-tabs__item",
-                index === activeTab ? "portfolio-tabs__item--active" : "",
-              ].join(" ")}
-              onClick={() => {
-                setActiveTab(index);
-                setPage(0);
-              }}
-            >
-              {tab}
-            </button>
-          ))}
-        </nav>
-      </header>
+    <div className={["work-gallery", `work-gallery--${layout}`].join(" ")}>
+      <div className="work-gallery__hero">
+        {hero ? <WorkMediaTile item={hero} isActive={isActive} /> : null}
+      </div>
+      <div className="work-gallery__stacks">
+        {stacks.map((item) => (
+          <div
+            key={item.id}
+            className={[
+              "work-gallery__stack",
+              item.slot ? `work-gallery__stack--${item.slot}` : "",
+            ].join(" ")}
+          >
+            <WorkMediaTile item={item} isActive={isActive} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-      <section className="portfolio-grid" aria-label={`${TABS[activeTab]} portfolio`}>
-        <div className="portfolio-grid__cell portfolio-grid__cell--video">
-          <div className="portfolio-grid__media portfolio-grid__media--video" />
-          <span className="portfolio-grid__play" aria-hidden="true" />
+function WorkRow({ project, isActive, onActivate, onToggleTouch }) {
+  const handleClick = () => {
+    if (typeof window !== "undefined" && !window.matchMedia("(hover: hover)").matches) {
+      onToggleTouch(project.id);
+    }
+  };
+
+  return (
+    <article
+      className={["work-row", isActive ? "work-row--active" : ""].join(" ")}
+      onMouseEnter={() => onActivate(project.id)}
+      onClick={handleClick}
+      aria-expanded={isActive}
+    >
+      <div className="work-row__meta">
+        <h2 className="work-row__title">{project.title}</h2>
+        <p className="work-row__desc">{project.description}</p>
+        <ul className="work-row__tags">
+          {project.tags.map((tag) => (
+            <li key={tag} className="work-row__tag">
+              {tag}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="work-row__reveal" aria-hidden={!isActive}>
+        <div className="work-row__reveal-inner">
+          <WorkProjectGallery
+            layout={project.mediaLayout}
+            media={project.media}
+            isActive={isActive}
+          />
         </div>
-        <div className="portfolio-grid__cell">
-          <div className="portfolio-grid__media portfolio-grid__media--a" />
-        </div>
-        <div className="portfolio-grid__cell">
-          <div className="portfolio-grid__media portfolio-grid__media--b" />
-        </div>
+      </div>
+    </article>
+  );
+}
+
+function WorkCta() {
+  return (
+    <section className="work-cta" aria-label="Collaborate with Nextale">
+      <div className="work-cta__inner">
+        <h2 className="work-cta__headline">Ready to collaborate with us?</h2>
+        <Link href="/contact" className="btn btn--dark work-cta__btn">
+          Let&apos;s do it
+          <span className="work-cta__arrow" aria-hidden="true">
+            →
+          </span>
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+export default function WorkPage() {
+  const [activeId, setActiveId] = useState(null);
+
+  useEffect(() => {
+    const onDocumentLeave = (event) => {
+      if (!event.relatedTarget) {
+        setActiveId(null);
+      }
+    };
+
+    document.documentElement.addEventListener("mouseleave", onDocumentLeave);
+    return () => {
+      document.documentElement.removeEventListener("mouseleave", onDocumentLeave);
+    };
+  }, []);
+
+  const handleToggleTouch = (id) => {
+    setActiveId((prev) => (prev === id ? null : id));
+  };
+
+  return (
+    <main className="page-work">
+      <WorkHero />
+
+      <section
+        className="work-accordion"
+        aria-label="Portfolio projects"
+        onMouseLeave={() => setActiveId(null)}
+      >
+        {WORK_PROJECTS.map((project) => (
+          <WorkRow
+            key={project.id}
+            project={project}
+            isActive={activeId === project.id}
+            onActivate={setActiveId}
+            onToggleTouch={handleToggleTouch}
+          />
+        ))}
       </section>
 
-      <footer className="portfolio-footer">
-        <p className="portfolio-footer__label">{TABS[activeTab]} Portfolio</p>
-        <div className="portfolio-footer__dots" aria-label="Portfolio pages">
-          {Array.from({ length: pages }).map((_, index) => (
-            <button
-              key={index}
-              type="button"
-              aria-label={`Page ${index + 1}`}
-              className={[
-                "portfolio-footer__dot",
-                index === page ? "portfolio-footer__dot--active" : "",
-              ].join(" ")}
-              onClick={() => setPage(index)}
-            />
-          ))}
-        </div>
-      </footer>
+      <WorkCta />
     </main>
   );
 }
