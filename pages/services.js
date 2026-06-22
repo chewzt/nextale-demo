@@ -1,26 +1,36 @@
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import socialReel from "../assets/landing-mobile-video.mp4";
 import desktopVideo from "../assets/landing-desktop-video.mp4";
 import brandShot1 from "../assets/services/brand-identity/brand-01.png";
 import brandShot2 from "../assets/services/brand-identity/brand-02.png";
 import brandShot3 from "../assets/services/brand-identity/brand-03.png";
-import photo01 from "../assets/services/productpicture/photo-01.png";
+import photo01 from "../assets/services/productpicture/photo-01.jpg";
 import photo02 from "../assets/services/productpicture/photo-02.jpg";
 import photo03 from "../assets/services/productpicture/photo-03.jpg";
 import photo04 from "../assets/services/productpicture/photo-04.jpg";
 import photo05 from "../assets/services/productpicture/photo-05.jpg";
-import photo06 from "../assets/services/productpicture/photo-06.png";
+import photo06 from "../assets/services/productpicture/photo-06.jpg";
 import photo07 from "../assets/services/productpicture/photo-07.jpg";
 import photo08 from "../assets/services/productpicture/photo-08.jpg";
 import photo09 from "../assets/services/productpicture/photo-09.jpg";
 import photo10 from "../assets/services/productpicture/photo-10.jpg";
 import photo11 from "../assets/services/productpicture/photo-11.jpg";
-import photo12 from "../assets/services/productpicture/photo-12.png";
-import photo13 from "../assets/services/productpicture/photo-13.png";
-import photo14 from "../assets/services/productpicture/photo-14.png";
+import photo12 from "../assets/services/productpicture/photo-12.jpg";
+import photo13 from "../assets/services/productpicture/photo-13.jpg";
+import photo14 from "../assets/services/productpicture/photo-14.jpg";
 import photo15 from "../assets/services/productpicture/photo-15.png";
 import { useStoryScroll } from "../plugins/useStoryScroll";
+
+// TODO: swap to ../assets/services/web-development/web-01.png when asset is ready
+const webShot = brandShot1;
+// TODO: swap to ../assets/services/mobile-apps/mobile-01.png when asset is ready
+const mobileShot = brandShot2;
+// TODO: swap to ../assets/services/system-development/system-01.png when asset is ready
+const systemShot = brandShot3;
+// TODO: swap to ../assets/services/automation-apis/automation-01.png when asset is ready
+const automationShot = photo10;
 
 const CATEGORY_LABEL = "Creative";
 
@@ -106,13 +116,88 @@ const SERVICES_BEATS = [
     ],
     images: [],
   },
+];
+
+const CREATIVE_PROCESS_STEPS = [
   {
-    id: "ui",
-    folder: "ui-ux",
-    num: "05",
-    title: "UI/UX Design",
-    body: "Interfaces designed around how your customers actually think — clean, purposeful, built to convert.",
-    images: [],
+    num: "01",
+    title: "Listen & align",
+    body: "We dig into your brand, who you're reaching, and what you're trying to achieve — then map out the work, timeline, and deliverables together.",
+    tags: ["Brand review", "Audience", "KPIs", "Budget", "Kickoff"],
+  },
+  {
+    num: "02",
+    title: "Build & refine",
+    body: "From first concepts to polished files — identity, content, photo, and video — shaped through feedback until every asset is ready to use.",
+    tags: ["Concepts", "Shoots", "Edits", "Revisions", "Final files"],
+  },
+  {
+    num: "03",
+    title: "Ship & grow",
+    body: "We roll out across your channels, watch what lands, and adjust the plan so each round of creative performs better than the last.",
+    tags: ["Scheduling", "Channels", "Analytics", "Optimisation", "Ongoing support"],
+  },
+];
+
+const TECHNOLOGY_LABEL = "Technology";
+
+const TECHNOLOGY_BEATS = [
+  {
+    id: "web",
+    type: "showcase",
+    folder: "web-development",
+    num: "01",
+    title: "Web Development",
+    body: "Fast, scalable websites and storefronts built to last.",
+    image: webShot,
+  },
+  {
+    id: "mobile",
+    type: "showcase",
+    folder: "mobile-apps",
+    num: "02",
+    title: "Mobile Apps",
+    body: "iOS and Android apps from prototype through App Store launch.",
+    image: mobileShot,
+  },
+  {
+    id: "system",
+    type: "showcase",
+    folder: "system-development",
+    num: "03",
+    title: "System Development",
+    body: "Custom platforms that replace spreadsheets and manual workflows.",
+    image: systemShot,
+  },
+  {
+    id: "automation",
+    type: "showcase",
+    folder: "automation-apis",
+    num: "04",
+    title: "Automation & APIs",
+    body: "Connect your stack and automate the busywork behind the scenes.",
+    image: automationShot,
+  },
+];
+
+const TECHNOLOGY_PROCESS_STEPS = [
+  {
+    num: "01",
+    title: "Scope & architect",
+    body: "We review your stack, workflows, and goals — then define architecture, integrations, and a realistic build plan before a line of code is written.",
+    tags: ["Tech audit", "Architecture", "Integrations", "Roadmap", "Estimates"],
+  },
+  {
+    num: "02",
+    title: "Build & test",
+    body: "We develop in sprints with staging environments, code review, and QA so every feature ships stable and ready for your team to use.",
+    tags: ["Sprints", "Staging", "Code review", "QA", "Documentation"],
+  },
+  {
+    num: "03",
+    title: "Launch & support",
+    body: "We deploy, hand over cleanly, and stay on for monitoring, fixes, and the next round of improvements as your product grows.",
+    tags: ["Deployment", "Handoff", "Monitoring", "Maintenance", "Iterations"],
   },
 ];
 
@@ -409,25 +494,122 @@ function ProductPhotoGrid({ photos }) {
     <div className="svc-photo-grid" aria-hidden="true">
       {photos.map((photo) => (
         <figure key={photo.id} className="svc-photo-grid__item">
-          <Image
-            src={photo.src}
-            alt=""
-            className="svc-photo-grid__img"
-            fill
-            sizes="20vw"
-          />
+          <div className="svc-photo-grid__expand">
+            <Image
+              src={photo.src}
+              alt=""
+              className="svc-photo-grid__img"
+              fill
+              sizes="20vw"
+              onLoadingComplete={(img) => {
+                img
+                  .closest(".svc-photo-grid__item")
+                  ?.style.setProperty(
+                    "--ar",
+                    img.naturalWidth / img.naturalHeight,
+                  );
+              }}
+            />
+          </div>
         </figure>
       ))}
     </div>
   );
 }
 
+function TechShowcase({ src }) {
+  return (
+    <figure className="svc-tech-showcase" aria-hidden="true">
+      <Image
+        src={src}
+        alt=""
+        className="svc-tech-showcase__img"
+        sizes="(max-width: 900px) 100vw, 52rem"
+      />
+    </figure>
+  );
+}
+
+function useProcessVisibility() {
+  const cardRef = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return { cardRef, visible };
+}
+
+function ServiceProcessCard({ steps, cardRef, visible, ariaLabel }) {
+  return (
+    <section className="svc-process" aria-label={ariaLabel}>
+      <div className="svc-process__inner">
+        <div
+          ref={cardRef}
+          className={[
+            "svc-process__card",
+            visible ? "svc-process--visible" : "",
+          ].join(" ")}
+        >
+          <h2 className="svc-process__title">Our process</h2>
+
+          <div className="svc-process__grid">
+            {steps.map((step) => (
+              <article key={step.num} className="svc-process__step">
+                <span className="svc-process__num">({step.num})</span>
+                <h3 className="svc-process__step-title">{step.title}</h3>
+                <p className="svc-process__step-body">{step.body}</p>
+                <ul className="svc-process__tags">
+                  {step.tags.map((tag) => (
+                    <li key={tag} className="svc-process__tag">
+                      {tag}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+
+          <div className="svc-process__cta">
+            <Link href="/contact" className="btn btn--dark">
+              Start a project
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function ServicesPage() {
   const trackRef = useRef(null);
+  const techTrackRef = useRef(null);
+  const creativeProcess = useProcessVisibility();
+  const techProcess = useProcessVisibility();
   const { activeBeat, dotProgress, isStatic } = useStoryScroll(
     trackRef,
     SERVICES_BEATS.length,
   );
+  const {
+    activeBeat: techActiveBeat,
+    dotProgress: techDotProgress,
+    isStatic: techIsStatic,
+  } = useStoryScroll(techTrackRef, TECHNOLOGY_BEATS.length);
 
   return (
     <main className="page-services">
@@ -561,6 +743,73 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
+
+      <ServiceProcessCard
+        steps={CREATIVE_PROCESS_STEPS}
+        cardRef={creativeProcess.cardRef}
+        visible={creativeProcess.visible}
+        ariaLabel="Creative process"
+      />
+
+      <section
+        className={[
+          "svc-story-track",
+          "svc-story-track--technology",
+          techIsStatic ? "svc-story-track--static" : "",
+        ].join(" ")}
+        aria-label="Technology services"
+        ref={techTrackRef}
+        style={{ "--story-beats": TECHNOLOGY_BEATS.length }}
+      >
+        <div className="svc-story">
+          <div className="svc-story__layout svc-story__layout--mirror">
+            <p className="svc-story__category-label">{TECHNOLOGY_LABEL}</p>
+
+            <div className="home-story__rail svc-story__rail" aria-hidden="true">
+              <span className="home-story__line" />
+              <span
+                className="home-story__dot"
+                style={{ top: `${techDotProgress * 100}%` }}
+              />
+            </div>
+
+            <div className="svc-story__slides">
+              {TECHNOLOGY_BEATS.map((beat, index) => (
+                <article
+                  key={beat.id}
+                  className={[
+                    "svc-story__slide",
+                    `svc-story__slide--${beat.id}`,
+                    !techIsStatic && techActiveBeat === index
+                      ? "svc-story__slide--active"
+                      : "",
+                    techIsStatic ? "svc-story__slide--static" : "",
+                  ].join(" ")}
+                >
+                  <div className="svc-story__header">
+                    <span className="svc-story__num">{beat.num}</span>
+                    <div className="svc-story__copy">
+                      <h2 className="svc-story__title">{beat.title}</h2>
+                      <p className="svc-story__body">{beat.body}</p>
+                    </div>
+                  </div>
+
+                  {beat.type === "showcase" ? (
+                    <TechShowcase src={beat.image} />
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <ServiceProcessCard
+        steps={TECHNOLOGY_PROCESS_STEPS}
+        cardRef={techProcess.cardRef}
+        visible={techProcess.visible}
+        ariaLabel="Technology process"
+      />
     </main>
   );
 }

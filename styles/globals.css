@@ -1335,7 +1335,7 @@ img {
 }
 
 .svc-story-track {
-  --story-beats: 5;
+  --story-beats: 4;
   --story-rail-w: 1.75rem;
   height: calc(var(--story-beats) * 100vh);
   background: var(--white);
@@ -1688,10 +1688,6 @@ img {
 
 .svc-story__slide--photo .svc-story__num {
   color: #3fa87c;
-}
-
-.svc-story__slide--ui .svc-story__num {
-  color: #f0b429;
 }
 
 .svc-story__title {
@@ -2072,12 +2068,22 @@ img {
   background: var(--bg-2);
 }
 
+.svc-photo-grid__expand {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%) scale(1);
+  transition:
+    width 0.45s var(--ease),
+    height 0.45s var(--ease),
+    transform 0.45s var(--ease);
+}
+
 .svc-photo-grid__img {
   object-fit: cover;
-  transition:
-    transform 0.3s var(--ease),
-    object-fit 0.3s var(--ease),
-    box-shadow 0.3s var(--ease);
+  transition: object-fit 0.45s var(--ease), box-shadow 0.45s var(--ease);
 }
 
 .svc-photo-grid__item:hover {
@@ -2085,10 +2091,14 @@ img {
   overflow: visible;
 }
 
+.svc-photo-grid__item:hover .svc-photo-grid__expand {
+  width: calc(100% * max(1, var(--ar, 1)));
+  height: calc(100% / min(1, var(--ar, 1)));
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
 .svc-photo-grid__item:hover .svc-photo-grid__img {
-  transform: scale(1.15);
   object-fit: contain;
-  background: var(--bg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
 }
 
@@ -2124,6 +2134,241 @@ img {
   opacity: 1;
   transform: none;
   animation: none;
+}
+
+/* ─── Services — technology track (mirrored Creative layout) ───── */
+.svc-story__layout--mirror {
+  grid-template-columns: minmax(0, 1fr) var(--story-rail-w) auto;
+}
+
+.svc-story__layout--mirror .svc-story__category-label {
+  grid-column: 3;
+  grid-row: 1;
+  text-align: right;
+}
+
+.svc-story__layout--mirror .svc-story__rail {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.svc-story__layout--mirror .svc-story__slides {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.svc-story-track--static .svc-story__layout--mirror {
+  grid-template-columns: 1fr;
+}
+
+.svc-story-track--static .svc-story__layout--mirror .svc-story__category-label,
+.svc-story-track--static .svc-story__layout--mirror .svc-story__rail,
+.svc-story-track--static .svc-story__layout--mirror .svc-story__slides {
+  grid-column: auto;
+  grid-row: auto;
+}
+
+.svc-story-track--static .svc-story__layout--mirror .svc-story__category-label {
+  text-align: left;
+}
+
+.svc-tech-showcase {
+  margin-top: clamp(1.5rem, 3vw, 2rem);
+  max-width: 52rem;
+  max-height: min(42vh, 24rem);
+  aspect-ratio: 16 / 10;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+.svc-tech-showcase__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.svc-story-track--technology .svc-story__slide .svc-tech-showcase {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.svc-story-track--technology .svc-story__slide--active .svc-tech-showcase {
+  animation: svcReelsIn 0.65s var(--spring) 0.05s forwards;
+}
+
+.svc-story-track--technology.svc-story-track--static .svc-story__slide .svc-tech-showcase,
+.svc-story-track--technology .svc-story__slide--static .svc-tech-showcase {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+@media (max-width: 900px) {
+  .svc-story-track--technology .svc-story__slide .svc-tech-showcase {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
+.svc-story__slide--web .svc-story__num {
+  color: var(--action);
+}
+
+.svc-story__slide--mobile .svc-story__num {
+  color: #5856d6;
+}
+
+.svc-story__slide--system .svc-story__num {
+  color: #34a853;
+}
+
+.svc-story__slide--automation .svc-story__num {
+  color: #e8772e;
+}
+
+/* ─── Services — creative process card ───────────────────────── */
+.svc-process {
+  padding: clamp(4rem, 10vw, 6rem) 0;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+}
+
+.svc-process__inner {
+  width: var(--container);
+  margin-inline: auto;
+}
+
+.svc-process__card {
+  background: var(--blue);
+  border-radius: clamp(1.75rem, 4vw, 3rem);
+  padding: clamp(2.5rem, 5vw, 4rem);
+  color: var(--white);
+}
+
+.svc-process__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0 0 clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.svc-process__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(2rem, 4vw, 3rem);
+}
+
+.svc-process__step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.svc-process__num {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--white) 45%, transparent);
+}
+
+.svc-process__step-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.8vw, 2.15rem);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.svc-process__step-body {
+  font-family: var(--font-body);
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--white) 75%, transparent);
+  margin: 0;
+}
+
+.svc-process__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.svc-process__tag {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.12);
+  color: color-mix(in srgb, var(--white) 88%, transparent);
+}
+
+.svc-process__cta {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.svc-process__card .svc-process__title,
+.svc-process__card .svc-process__step,
+.svc-process__card .svc-process__cta {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.svc-process--visible .svc-process__title {
+  animation: svcProcessIn 0.55s var(--spring) forwards;
+}
+
+.svc-process--visible .svc-process__step:nth-child(1) {
+  animation: svcProcessIn 0.55s var(--spring) 0.08s forwards;
+}
+
+.svc-process--visible .svc-process__step:nth-child(2) {
+  animation: svcProcessIn 0.55s var(--spring) 0.16s forwards;
+}
+
+.svc-process--visible .svc-process__step:nth-child(3) {
+  animation: svcProcessIn 0.55s var(--spring) 0.24s forwards;
+}
+
+.svc-process--visible .svc-process__cta {
+  animation: svcProcessIn 0.55s var(--spring) 0.32s forwards;
+}
+
+@keyframes svcProcessIn {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .svc-process__grid {
+    grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 6vw, 3rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svc-process__card .svc-process__title,
+  .svc-process__card .svc-process__step,
+  .svc-process__card .svc-process__cta {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
 }
 
 .svc-story-track--static .svc-story__visuals--mosaic {

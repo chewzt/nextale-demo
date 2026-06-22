@@ -475,11 +475,6 @@ const CAPABILITIES_DISCIPLINES = [
         title: "Product Photography",
         body: "Studio-quality product and lifestyle imagery built to sell.",
       },
-      {
-        icon: "ui",
-        title: "UI/UX Design",
-        body: "Product and web interfaces designed to convert, not just impress.",
-      },
     ],
   },
   {
