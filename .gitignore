@@ -6,7 +6,7 @@ node_modules
 out
 
 # Local Assets (Dev only - big folder ignored)
-/assets
+# /assets
 
 # OS Metadata
 .DS_Store%
