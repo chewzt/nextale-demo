@@ -1,3 +1,4 @@
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -11,7 +12,7 @@ import logoHitotsu from "../assets/logolist/hitotsu-1.png";
 import logoAhma from "../assets/logolist/logo_ahma.png";
 import logoThongKee from "../assets/logolist/thongkeelogo-1-1.png";
 import logoJoyChickenRice from "../assets/logolist/喜悦chickenrice-PhotoRoom-1.png-PhotoRoom-1.png";
-import { SERVICES_OPTIONS, useContactForm } from "../plugins/formLogic";
+import { ContactForm, useContactForm } from "../plugins/formLogic";
 import { useStoryScroll } from "../plugins/useStoryScroll";
 
 /* ─── Hero scroll transition ─────────────────────────────────── */
@@ -365,18 +366,174 @@ function ServiceIcon({ type }) {
   }
 }
 
-function CapabilityServiceItem({ service }) {
+const BENTO_CHILD_SLOTS = ["child-a", "child-b", "child-c", "child-d"];
+
+const DISCIPLINE_ORDER = ["creative", "technology"];
+
+const BENTO_SWAP_EASE = { duration: 0.22, ease: [0.22, 1, 0.36, 1] };
+
+function ChevronIcon({ direction }) {
   return (
-    <div className="home-capabilities__item">
-      <span className="home-capabilities__item-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="home-bento__nav-icon">
+      {direction === "prev" ? (
+        <path
+          d="M14.5 6.5 9 12l5.5 5.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ) : (
+        <path
+          d="M9.5 6.5 15 12l-5.5 5.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      )}
+    </svg>
+  );
+}
+
+function ServicesChildCard({ service, slot, accent, index }) {
+  const reduceMotion = useReducedMotion();
+  const className = [
+    "home-bento__cell",
+    "home-bento__child",
+    `home-bento__child--${slot}`,
+  ].join(" ");
+
+  const content = (
+    <>
+      <span
+        className="home-bento__child-icon"
+        style={{ "--bento-accent": accent }}
+        aria-hidden="true"
+      >
         <ServiceIcon type={service.icon} />
       </span>
-      <div className="home-capabilities__item-copy">
-        <div className="home-capabilities__item-head">
-          <h4 className="home-capabilities__item-title">{service.title}</h4>
-        </div>
-        <p className="home-capabilities__item-body">{service.body}</p>
+      <div className="home-bento__child-copy">
+        <h4 className="home-bento__child-title">{service.title}</h4>
+        <p className="home-bento__child-body">{service.body}</p>
       </div>
+    </>
+  );
+
+  if (reduceMotion) {
+    return <article className={className}>{content}</article>;
+  }
+
+  return (
+    <motion.article
+      className={className}
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ ...BENTO_SWAP_EASE, delay: index * 0.04 }}
+    >
+      {content}
+    </motion.article>
+  );
+}
+
+function ServicesAnchorCard({ discipline, inactiveDiscipline, onPrev, onNext }) {
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <article
+      className={[
+        "home-bento__cell",
+        "home-bento__anchor",
+        `home-bento__anchor--${discipline.id}`,
+      ].join(" ")}
+      style={{ "--bento-accent": discipline.accent }}
+    >
+      {reduceMotion ? (
+        <div className="home-bento__anchor-copy">
+          <h3 className="home-bento__anchor-title">{discipline.name}</h3>
+          {discipline.descriptor ? (
+            <p className="home-bento__anchor-descriptor">{discipline.descriptor}</p>
+          ) : null}
+        </div>
+      ) : (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={discipline.id}
+            className="home-bento__anchor-copy"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <h3 className="home-bento__anchor-title">{discipline.name}</h3>
+            {discipline.descriptor ? (
+              <p className="home-bento__anchor-descriptor">{discipline.descriptor}</p>
+            ) : null}
+          </motion.div>
+        </AnimatePresence>
+      )}
+
+      <div className="home-bento__nav" aria-label="Discipline navigation">
+        <button
+          type="button"
+          className="home-bento__nav-btn"
+          onClick={onPrev}
+          aria-label={`Previous: ${inactiveDiscipline.name}`}
+        >
+          <ChevronIcon direction="prev" />
+        </button>
+        <button
+          type="button"
+          className="home-bento__nav-btn"
+          onClick={onNext}
+          aria-label={`Next: ${inactiveDiscipline.name}`}
+        >
+          <ChevronIcon direction="next" />
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function ServicesBentoGrid({
+  activeDiscipline,
+  categories,
+  onPrev,
+  onNext,
+}) {
+  const discipline = DISCIPLINE_BY_ID[activeDiscipline];
+  const inactiveDiscipline = categories.find(
+    (item) => item.id !== activeDiscipline,
+  );
+  const services = discipline?.services ?? [];
+
+  if (!discipline || !inactiveDiscipline) {
+    return null;
+  }
+
+  return (
+    <div className="home-bento__grid" aria-label="Creative and technology services">
+      <ServicesAnchorCard
+        discipline={discipline}
+        inactiveDiscipline={inactiveDiscipline}
+        onPrev={onPrev}
+        onNext={onNext}
+      />
+
+      <AnimatePresence mode="popLayout">
+        {services.map((service, index) => (
+          <ServicesChildCard
+            key={`${activeDiscipline}-${service.icon}`}
+            service={service}
+            slot={BENTO_CHILD_SLOTS[index]}
+            accent={discipline.accent}
+            index={index}
+          />
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
@@ -454,6 +611,8 @@ const CAPABILITIES_DISCIPLINES = [
   {
     id: "creative",
     name: "Creative",
+    accent: "#1b3fd8",
+    descriptor: "Brand, content, and visual storytelling.",
     services: [
       {
         icon: "brand",
@@ -480,6 +639,8 @@ const CAPABILITIES_DISCIPLINES = [
   {
     id: "technology",
     name: "Technology",
+    accent: "#0071e3",
+    descriptor: "Websites, apps, and systems that scale.",
     services: [
       {
         icon: "web",
@@ -505,8 +666,10 @@ const CAPABILITIES_DISCIPLINES = [
   },
 ];
 
-const CAPABILITY_ROW_COUNT = Math.max(
-  ...CAPABILITIES_DISCIPLINES.map((discipline) => discipline.services.length),
+const SERVICE_CATEGORIES = CAPABILITIES_DISCIPLINES;
+
+const DISCIPLINE_BY_ID = Object.fromEntries(
+  SERVICE_CATEGORIES.map((discipline) => [discipline.id, discipline]),
 );
 
 const CORPORATE_LOGOS = [
@@ -541,6 +704,23 @@ export default function HomePage() {
   const section2Ref = useRef(null);
   const storyTrackRef = useRef(null);
   const form = useContactForm();
+  const [activeDiscipline, setActiveDiscipline] = useState("creative");
+
+  const goNextDiscipline = useCallback(() => {
+    setActiveDiscipline((prev) => {
+      const index = DISCIPLINE_ORDER.indexOf(prev);
+      return DISCIPLINE_ORDER[(index + 1) % DISCIPLINE_ORDER.length];
+    });
+  }, []);
+
+  const goPrevDiscipline = useCallback(() => {
+    setActiveDiscipline((prev) => {
+      const index = DISCIPLINE_ORDER.indexOf(prev);
+      return DISCIPLINE_ORDER[
+        (index - 1 + DISCIPLINE_ORDER.length) % DISCIPLINE_ORDER.length
+      ];
+    });
+  }, []);
   const {
     scale,
     circleScale,
@@ -642,7 +822,6 @@ export default function HomePage() {
             transform: `translateY(${section2Shift}px)`,
           }}
         >
-          <p className="home-intro__eyebrow">Creative agency</p>
           <h2 className="home-intro__headline">
             From paper to pixel
             <br />
@@ -734,21 +913,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="home-capabilities" aria-label="What we do">
+      <section className="home-capabilities" aria-label="Creative and technology services">
         <div className="home-capabilities__inner">
           <header className="home-capabilities__header">
-            <p className="home-capabilities__eyebrow">What we do</p>
             <h2 className="home-capabilities__headline">
-              Two disciplines.
-              <br />
-              One team.
+            Nextale aligns creative and technology under shared standards.
             </h2>
-            <p className="home-capabilities__lead">
-              Most studios pick a lane. Nextale runs both — so your brand and the
-              technology behind it are built by people who actually talk to each
-              other.
-            </p>
           </header>
+
+          <div className="home-bento">
+            <ServicesBentoGrid
+              activeDiscipline={activeDiscipline}
+              categories={SERVICE_CATEGORIES}
+              onPrev={goPrevDiscipline}
+              onNext={goNextDiscipline}
+            />
+          </div>
 
           <div
             className="home-capabilities__marquee"
@@ -768,52 +948,6 @@ export default function HomePage() {
                 />
               </ul>
             </div>
-          </div>
-
-          <div className="home-capabilities__pillars">
-            <div className="home-capabilities__pillar-headers">
-              {CAPABILITIES_DISCIPLINES.map((discipline) => (
-                <header
-                  key={discipline.id}
-                  className={[
-                    "home-capabilities__pillar-head",
-                    `home-capabilities__pillar-head--${discipline.id}`,
-                  ].join(" ")}
-                >
-                  <h3 className="home-capabilities__pillar-name">
-                    {discipline.name}
-                  </h3>
-                </header>
-              ))}
-            </div>
-
-            <ul className="home-capabilities__rows">
-              {Array.from({ length: CAPABILITY_ROW_COUNT }, (_, rowIndex) => {
-                const creativeService =
-                  CAPABILITIES_DISCIPLINES[0].services[rowIndex];
-                const technologyService =
-                  CAPABILITIES_DISCIPLINES[1].services[rowIndex];
-
-                return (
-                  <li key={rowIndex} className="home-capabilities__row">
-                    {creativeService ? (
-                      <CapabilityServiceItem service={creativeService} />
-                    ) : null}
-                    {technologyService ? (
-                      <CapabilityServiceItem service={technologyService} />
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-
-          <div className="home-capabilities__corporate-head">
-            <p className="home-capabilities__corporate-eyebrow">Under one roof</p>
-            <p className="home-capabilities__corporate-lead">
-              Creative and technology, aligned under Nextale — one group, two
-              disciplines, shared standards.
-            </p>
           </div>
 
           <Link
@@ -836,145 +970,7 @@ export default function HomePage() {
           </div>
 
           <div className="home-contact__form-wrap">
-            <form
-              className="home-contact__form"
-              onSubmit={form.submit}
-              noValidate
-            >
-              <div className="home-contact__row">
-                <div
-                  className={[
-                    "home-contact__field",
-                    form.errors.name ? "home-contact__field--error" : "",
-                  ].join(" ")}
-                >
-                  <label htmlFor="home-name">Your name</label>
-                  <input
-                    id="home-name"
-                    name="name"
-                    type="text"
-                    autoComplete="name"
-                    placeholder="Jane Tan"
-                    value={form.fields.name}
-                    onChange={form.handleChange}
-                  />
-                  {form.errors.name && (
-                    <p className="home-contact__error">{form.errors.name}</p>
-                  )}
-                </div>
-
-                <div
-                  className={[
-                    "home-contact__field",
-                    form.errors.email ? "home-contact__field--error" : "",
-                  ].join(" ")}
-                >
-                  <label htmlFor="home-email">Email</label>
-                  <input
-                    id="home-email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="jane@company.com"
-                    value={form.fields.email}
-                    onChange={form.handleChange}
-                  />
-                  {form.errors.email && (
-                    <p className="home-contact__error">{form.errors.email}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="home-contact__row">
-                <div className="home-contact__field">
-                  <label htmlFor="home-company">Company</label>
-                  <input
-                    id="home-company"
-                    name="company"
-                    type="text"
-                    autoComplete="organization"
-                    placeholder="Optional"
-                    value={form.fields.company}
-                    onChange={form.handleChange}
-                  />
-                </div>
-
-                <div className="home-contact__field">
-                  <label htmlFor="home-budget">Budget range</label>
-                  <input
-                    id="home-budget"
-                    name="budget"
-                    type="text"
-                    placeholder="e.g. RM 20k – 50k"
-                    value={form.fields.budget}
-                    onChange={form.handleChange}
-                  />
-                </div>
-              </div>
-
-              <fieldset className="home-contact__services">
-                <legend className="home-contact__services-label">
-                  What can we help with?
-                </legend>
-                <div className="home-contact__services-list">
-                  {SERVICES_OPTIONS.map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      className={[
-                        "home-contact__service-btn",
-                        form.fields.services.includes(option)
-                          ? "home-contact__service-btn--active"
-                          : "",
-                      ].join(" ")}
-                      aria-pressed={form.fields.services.includes(option)}
-                      onClick={() => form.handleServicesToggle(option)}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <div
-                className={[
-                  "home-contact__field",
-                  form.errors.message ? "home-contact__field--error" : "",
-                ].join(" ")}
-              >
-                <label htmlFor="home-message">Your message</label>
-                <textarea
-                  id="home-message"
-                  name="message"
-                  rows={5}
-                  placeholder="A few lines on what you're building and where you'd like help."
-                  value={form.fields.message}
-                  onChange={form.handleChange}
-                />
-                {form.errors.message && (
-                  <p className="home-contact__error">{form.errors.message}</p>
-                )}
-              </div>
-
-              <div className="home-contact__submit-row">
-                <button
-                  type="submit"
-                  className="home-contact__submit btn btn--primary"
-                  disabled={form.isSubmitting}
-                >
-                  {form.isSubmitting ? "Sending…" : "Submit"}
-                </button>
-                <p className="home-contact__submit-note">
-                  We&apos;ll reply within one business day.
-                </p>
-              </div>
-
-              {form.isSuccess && (
-                <p className="home-contact__success">
-                  Message sent — we&apos;ll be in touch soon.
-                </p>
-              )}
-            </form>
+            <ContactForm form={form} variant="home" />
           </div>
         </div>
       </section>

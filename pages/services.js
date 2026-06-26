@@ -266,6 +266,50 @@ function SvcPortfolioStrip({ children }) {
   );
 }
 
+function SvcStoryNumRoll({ beats, activeBeat }) {
+  const focusedBeat = beats[activeBeat] ?? beats[0];
+
+  return (
+    <div className="svc-story__num-roll">
+      <div className="svc-story__num-wrapper" aria-hidden="true">
+        <div
+          className="svc-story__num-inner"
+          style={{ "--num-index": activeBeat }}
+        >
+          {beats.map((beat) => (
+            <span
+              key={beat.id}
+              className={[
+                "svc-story__num",
+                `svc-story__num--${beat.id}`,
+              ].join(" ")}
+            >
+              {beat.num}
+            </span>
+          ))}
+        </div>
+      </div>
+      <span className="svc-story__num-sr">{focusedBeat.num}</span>
+    </div>
+  );
+}
+
+function ServiceSlideHeader({ beat, pinned }) {
+  return (
+    <div className="svc-story__header">
+      {pinned ? (
+        <div className="svc-story__num-spacer" aria-hidden="true" />
+      ) : (
+        <span className="svc-story__num">{beat.num}</span>
+      )}
+      <div className="svc-story__copy">
+        <h2 className="svc-story__title">{beat.title}</h2>
+        <p className="svc-story__body">{beat.body}</p>
+      </div>
+    </div>
+  );
+}
+
 function hasMosaicLayout(images) {
   return (
     images.length === 3 &&
@@ -634,8 +678,12 @@ function ServiceProcessCard({ steps, cardRef, visible, ariaLabel }) {
           <h2 className="svc-process__title">Our process</h2>
 
           <div className="svc-process__grid">
-            {steps.map((step) => (
-              <article key={step.num} className="svc-process__step">
+            {steps.map((step, index) => (
+              <article
+                key={step.num}
+                className="svc-process__step"
+                style={{ "--stagger-delay": `${index * 0.15}s` }}
+              >
                 <span className="svc-process__num">({step.num})</span>
                 <h3 className="svc-process__step-title">{step.title}</h3>
                 <p className="svc-process__step-body">{step.body}</p>
@@ -799,7 +847,19 @@ export default function ServicesPage() {
               />
             </div>
 
-            <div className="svc-story__slides">
+            <div
+              className={[
+                "svc-story__slides",
+                !isStatic ? "svc-story__slides--pinned" : "",
+              ].join(" ")}
+            >
+              {!isStatic ? (
+                <SvcStoryNumRoll
+                  beats={SERVICES_BEATS}
+                  activeBeat={activeBeat}
+                />
+              ) : null}
+
               {SERVICES_BEATS.map((beat, index) => (
                 <article
                   key={beat.id}
@@ -812,13 +872,7 @@ export default function ServicesPage() {
                     isStatic ? "svc-story__slide--static" : "",
                   ].join(" ")}
                 >
-                  <div className="svc-story__header">
-                    <span className="svc-story__num">{beat.num}</span>
-                    <div className="svc-story__copy">
-                      <h2 className="svc-story__title">{beat.title}</h2>
-                      <p className="svc-story__body">{beat.body}</p>
-                    </div>
-                  </div>
+                  <ServiceSlideHeader beat={beat} pinned={!isStatic} />
 
                   {beat.type === "social" ? (
                     <SocialReelStrip
@@ -924,7 +978,19 @@ export default function ServicesPage() {
               />
             </div>
 
-            <div className="svc-story__slides">
+            <div
+              className={[
+                "svc-story__slides",
+                !techIsStatic ? "svc-story__slides--pinned" : "",
+              ].join(" ")}
+            >
+              {!techIsStatic ? (
+                <SvcStoryNumRoll
+                  beats={TECHNOLOGY_BEATS}
+                  activeBeat={techActiveBeat}
+                />
+              ) : null}
+
               {TECHNOLOGY_BEATS.map((beat, index) => (
                 <article
                   key={beat.id}
@@ -937,13 +1003,7 @@ export default function ServicesPage() {
                     techIsStatic ? "svc-story__slide--static" : "",
                   ].join(" ")}
                 >
-                  <div className="svc-story__header">
-                    <span className="svc-story__num">{beat.num}</span>
-                    <div className="svc-story__copy">
-                      <h2 className="svc-story__title">{beat.title}</h2>
-                      <p className="svc-story__body">{beat.body}</p>
-                    </div>
-                  </div>
+                  <ServiceSlideHeader beat={beat} pinned={!techIsStatic} />
 
                   {beat.type === "showcase" ? (
                     <TechShowcase src={beat.image} />

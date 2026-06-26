@@ -1,6 +1,9 @@
 # Dependencies
 node_modules
 
+# Environment (secrets)
+.env*.local
+
 # Next.js Build Output
 .next
 out

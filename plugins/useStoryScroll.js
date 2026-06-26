@@ -47,7 +47,7 @@ export function useStoryScroll(trackRef, beatCount) {
         beatCount - 1,
         Math.floor(progress * beatCount),
       );
-      const dotProgress = beatCount <= 1 ? 0 : activeBeat / (beatCount - 1);
+      const dotProgress = storyClamp(progress, 0, 1);
       const beatFraction = storyClamp(progress * beatCount - activeBeat, 0, 1);
 
       setState({

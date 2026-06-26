@@ -112,14 +112,20 @@ function WorkMediaTile({ item, isActive }) {
     const video = videoRef.current;
     if (!video || item.type !== "video") return undefined;
 
+    let timeoutId = null;
+
     if (isActive) {
       video.play().catch(() => {});
     } else {
-      video.pause();
-      video.currentTime = 0;
+      timeoutId = setTimeout(() => {
+        video.pause();
+        video.currentTime = 0;
+      }, 550);
     }
 
-    return undefined;
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [isActive, item.type]);
 
   if (item.type === "video") {
@@ -174,17 +180,14 @@ function WorkProjectGallery({ layout, media, isActive }) {
   );
 }
 
-function WorkRow({ project, isActive, onActivate, onToggleTouch }) {
+function WorkRow({ project, isActive, onToggleTouch }) {
   const handleClick = () => {
-    if (typeof window !== "undefined" && !window.matchMedia("(hover: hover)").matches) {
-      onToggleTouch(project.id);
-    }
+    onToggleTouch(project.id);
   };
 
   return (
     <article
       className={["work-row", isActive ? "work-row--active" : ""].join(" ")}
-      onMouseEnter={() => onActivate(project.id)}
       onClick={handleClick}
       aria-expanded={isActive}
     >
@@ -232,19 +235,6 @@ function WorkCta() {
 export default function WorkPage() {
   const [activeId, setActiveId] = useState(null);
 
-  useEffect(() => {
-    const onDocumentLeave = (event) => {
-      if (!event.relatedTarget) {
-        setActiveId(null);
-      }
-    };
-
-    document.documentElement.addEventListener("mouseleave", onDocumentLeave);
-    return () => {
-      document.documentElement.removeEventListener("mouseleave", onDocumentLeave);
-    };
-  }, []);
-
   const handleToggleTouch = (id) => {
     setActiveId((prev) => (prev === id ? null : id));
   };
@@ -253,17 +243,12 @@ export default function WorkPage() {
     <main className="page-work">
       <WorkHero />
 
-      <section
-        className="work-accordion"
-        aria-label="Portfolio projects"
-        onMouseLeave={() => setActiveId(null)}
-      >
+      <section className="work-accordion" aria-label="Portfolio projects">
         {WORK_PROJECTS.map((project) => (
           <WorkRow
             key={project.id}
             project={project}
             isActive={activeId === project.id}
-            onActivate={setActiveId}
             onToggleTouch={handleToggleTouch}
           />
         ))}
