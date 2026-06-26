@@ -39,13 +39,33 @@ export default function App({ Component, pageProps }) {
     setMenuOpen(false);
   }, [router.pathname]);
 
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    document.body.classList.add("body--menu-open");
+    return () => document.body.classList.remove("body--menu-open");
+  }, [menuOpen]);
+
   return (
     <div className={poppins.variable}>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <header className={`site-nav ${scrolled ? "site-nav--scrolled" : ""}`}>
+      {menuOpen ? (
+        <button
+          type="button"
+          className="site-nav__backdrop"
+          aria-label="Close menu"
+          tabIndex={-1}
+          onClick={() => setMenuOpen(false)}
+        />
+      ) : null}
+
+      <header
+        className={`site-nav ${scrolled ? "site-nav--scrolled" : ""} ${
+          menuOpen ? "site-nav--menu-open" : ""
+        }`}
+      >
         <div className="site-nav__inner">
           <Link href="/" className="site-nav__brand" aria-label="Nextale home">
             <Image
@@ -89,6 +109,7 @@ export default function App({ Component, pageProps }) {
         <nav
           className={`site-nav__mobile ${menuOpen ? "site-nav__mobile--open" : ""}`}
           aria-label="Mobile navigation"
+          aria-hidden={!menuOpen}
         >
           {NAV_LINKS.map((link) => (
             <Link
