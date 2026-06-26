@@ -2,7 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
-    return [{ source: "/llms.txt", destination: "/api/llms" }];
+    return [
+      { source: "/llms.txt", destination: "/api/llms" },
+      { source: "/robots.txt", destination: "/api/robots" },
+    ];
   },
   webpack: (config) => {
     config.module.rules.push({
