@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async rewrites() {
+    return [{ source: "/llms.txt", destination: "/api/llms" }];
+  },
   webpack: (config) => {
     config.module.rules.push({
       test: /\.(mp4|webm)$/i,

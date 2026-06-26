@@ -12,6 +12,11 @@ import logoHitotsu from "../assets/logolist/hitotsu-1.png";
 import logoAhma from "../assets/logolist/logo_ahma.png";
 import logoThongKee from "../assets/logolist/thongkeelogo-1-1.png";
 import logoJoyChickenRice from "../assets/logolist/喜悦chickenrice-PhotoRoom-1.png-PhotoRoom-1.png";
+import GeoChunk from "../components/seo/GeoChunk";
+import JsonLd from "../components/seo/JsonLd";
+import { FAQ } from "../lib/seo/content";
+import { HOME_META, PageHead } from "../lib/seo/metadata";
+import { buildAgencySchemas } from "../lib/seo/schemas";
 import { ContactForm, useContactForm } from "../plugins/formLogic";
 import { useStoryScroll } from "../plugins/useStoryScroll";
 
@@ -739,7 +744,13 @@ export default function HomePage() {
   );
 
   return (
-    <main className="home">
+    <>
+      <PageHead {...HOME_META} />
+      <JsonLd data={buildAgencySchemas()} />
+
+      <main className="home">
+        <h1 className="sr-only">Nextale — Creative and Technology Agency</h1>
+
       {showCircle && (
         <div className="home-hero__circle-portal" aria-hidden="true">
           <span
@@ -974,6 +985,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <GeoChunk hidden items={[FAQ[0], FAQ[3]]} />
     </main>
+    </>
   );
 }

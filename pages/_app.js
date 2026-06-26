@@ -43,7 +43,6 @@ export default function App({ Component, pageProps }) {
     <div className={poppins.variable}>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Nextale — Creative Agency</title>
       </Head>
 
       <header className={`site-nav ${scrolled ? "site-nav--scrolled" : ""}`}>

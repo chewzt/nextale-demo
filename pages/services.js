@@ -21,6 +21,11 @@ import photo12 from "../assets/services/productpicture/photo-12.jpg";
 import photo13 from "../assets/services/productpicture/photo-13.jpg";
 import photo14 from "../assets/services/productpicture/photo-14.jpg";
 import photo15 from "../assets/services/productpicture/photo-15.png";
+import GeoChunk from "../components/seo/GeoChunk";
+import JsonLd from "../components/seo/JsonLd";
+import { FAQ } from "../lib/seo/content";
+import { PageHead, SERVICES_META } from "../lib/seo/metadata";
+import { buildAgencySchemas } from "../lib/seo/schemas";
 import { useStoryScroll } from "../plugins/useStoryScroll";
 
 // TODO: swap to ../assets/services/web-development/web-01.png when asset is ready
@@ -797,7 +802,11 @@ export default function ServicesPage() {
   }, [activeBeat, isStatic]);
 
   return (
-    <main className="page-services">
+    <>
+      <PageHead {...SERVICES_META} />
+      <JsonLd data={buildAgencySchemas()} />
+
+      <main className="page-services">
       <section className="home-intro" aria-label="Services introduction">
         <div className="home-intro__inner">
           <p className="home-intro__eyebrow">Our services</p>
@@ -1030,6 +1039,9 @@ export default function ServicesPage() {
       />
 
       <ServicesFaq />
+
+      <GeoChunk hidden items={[FAQ[1], FAQ[2]]} />
     </main>
+    </>
   );
 }
