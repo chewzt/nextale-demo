@@ -12,6 +12,13 @@ import logoHitotsu from "../assets/logolist/hitotsu-1.png";
 import logoAhma from "../assets/logolist/logo_ahma.png";
 import logoThongKee from "../assets/logolist/thongkeelogo-1-1.png";
 import logoJoyChickenRice from "../assets/logolist/喜悦chickenrice-PhotoRoom-1.png-PhotoRoom-1.png";
+import brandSchemeBg from "../assets/services/brand-identity/brandscheme2.png";
+import technologyBg from "../assets/technology/technology-bg.png";
+import socialFacebookIcon from "../assets/services/socialmedia/facebook.svg";
+import socialPhonePortrait from "../assets/services/socialmedia/social-phone-portrait.png";
+import socialXiaohongshuIcon from "../assets/services/socialmedia/xiaohongshu.svg";
+import socialYoutubeIcon from "../assets/services/socialmedia/youtube.svg";
+import ConfettiBombCard from "../components/ConfettiBombCard";
 import GeoChunk from "../components/seo/GeoChunk";
 import JsonLd from "../components/seo/JsonLd";
 import { FAQ } from "../lib/seo/content";
@@ -377,6 +384,99 @@ const DISCIPLINE_ORDER = ["creative", "technology"];
 
 const BENTO_SWAP_EASE = { duration: 0.22, ease: [0.22, 1, 0.36, 1] };
 
+const BENTO_ANCHOR_SWAP = { duration: 0.2 };
+
+const SOCIAL_INSTAGRAM_GRADIENT =
+  "135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%";
+
+const SOCIAL_PHONE_FLOATS = [
+  {
+    id: "youtube",
+    src: socialYoutubeIcon,
+    top: "-12%",
+    right: "-8%",
+    placement: "corner",
+  },
+  {
+    id: "facebook",
+    src: socialFacebookIcon,
+    top: "25%",
+    left: "-8%",
+    placement: "left-edge",
+  },
+  {
+    id: "xiaohongshu",
+    src: socialXiaohongshuIcon,
+    top: "75%",
+    right: "-8%",
+    placement: "right-edge",
+  },
+];
+
+function SocialPhoneMockup() {
+  return (
+    <div className="home-bento__social-phone" aria-hidden="true">
+      <div className="home-bento__social-phone-device">
+        <img
+          src={socialPhonePortrait.src}
+          alt=""
+          width={socialPhonePortrait.width}
+          height={socialPhonePortrait.height}
+          className="home-bento__social-phone-image"
+        />
+        {SOCIAL_PHONE_FLOATS.map((item) => (
+          <div
+            key={item.id}
+            className={[
+              "home-bento__social-phone-float",
+              `home-bento__social-phone-float--${item.id}`,
+              item.placement === "corner"
+                ? "home-bento__social-phone-float--corner"
+                : `home-bento__social-phone-float--${item.placement}`,
+            ].join(" ")}
+            style={{
+              top: item.top,
+              ...(item.right ? { right: item.right } : {}),
+              ...(item.left ? { left: item.left } : {}),
+            }}
+          >
+            <img
+              src={item.src}
+              alt=""
+              className={[
+                "home-bento__social-phone-float-icon",
+                `home-bento__social-phone-float-icon--${item.id}`,
+              ].join(" ")}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SocialBentoDeco() {
+  return (
+    <>
+      <div
+        className="home-bento__social-bg"
+        style={{ "--social-gradient": SOCIAL_INSTAGRAM_GRADIENT }}
+      />
+      <SocialPhoneMockup />
+    </>
+  );
+}
+
+function TechnologyBentoDeco() {
+  return (
+    <div
+      className="home-bento__technology-bg"
+      style={{ backgroundImage: `url(${technologyBg.src})` }}
+      aria-hidden="true"
+    />
+  );
+}
+
 function ChevronIcon({ direction }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="home-bento__nav-icon">
@@ -405,13 +505,39 @@ function ChevronIcon({ direction }) {
 
 function ServicesChildCard({ service, slot, accent, index }) {
   const reduceMotion = useReducedMotion();
+  const isSocial = service.icon === "social";
+  const isBrand = service.icon === "brand";
   const className = [
     "home-bento__cell",
     "home-bento__child",
     `home-bento__child--${slot}`,
-  ].join(" ");
+    isSocial ? "home-bento__child--social" : "",
+    isBrand ? "home-bento__child--brand" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-  const content = (
+  const content = isSocial ? (
+    <>
+      <SocialBentoDeco />
+      <div className="home-bento__child-copy home-bento__child-copy--on-gradient">
+        <h4 className="home-bento__child-title">{service.title}</h4>
+        <p className="home-bento__child-body">{service.body}</p>
+      </div>
+    </>
+  ) : isBrand ? (
+    <>
+      <div
+        className="home-bento__brand-bg"
+        style={{ backgroundImage: `url(${brandSchemeBg.src})` }}
+        aria-hidden="true"
+      />
+      <div className="home-bento__child-copy">
+        <h4 className="home-bento__child-title">{service.title}</h4>
+        <p className="home-bento__child-body">{service.body}</p>
+      </div>
+    </>
+  ) : (
     <>
       <span
         className="home-bento__child-icon"
@@ -444,7 +570,13 @@ function ServicesChildCard({ service, slot, accent, index }) {
   );
 }
 
-function ServicesAnchorCard({ discipline, inactiveDiscipline, onPrev, onNext }) {
+function ServicesAnchorCard({
+  discipline,
+  inactiveDiscipline,
+  onPrev,
+  onNext,
+  creativeConfettiStateRef,
+}) {
   const reduceMotion = useReducedMotion();
 
   return (
@@ -457,26 +589,37 @@ function ServicesAnchorCard({ discipline, inactiveDiscipline, onPrev, onNext }) 
       style={{ "--bento-accent": discipline.accent }}
     >
       {reduceMotion ? (
-        <div className="home-bento__anchor-copy">
-          <h3 className="home-bento__anchor-title">{discipline.name}</h3>
-          {discipline.descriptor ? (
-            <p className="home-bento__anchor-descriptor">{discipline.descriptor}</p>
-          ) : null}
-        </div>
-      ) : (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={discipline.id}
-            className="home-bento__anchor-copy"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
+        <>
+          {discipline.id === "technology" ? <TechnologyBentoDeco /> : null}
+          <div className="home-bento__anchor-copy">
             <h3 className="home-bento__anchor-title">{discipline.name}</h3>
             {discipline.descriptor ? (
               <p className="home-bento__anchor-descriptor">{discipline.descriptor}</p>
             ) : null}
+          </div>
+        </>
+      ) : (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={discipline.id}
+            className="home-bento__anchor-layer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={BENTO_ANCHOR_SWAP}
+          >
+            {discipline.id === "creative" ? (
+              <ConfettiBombCard stateRef={creativeConfettiStateRef} />
+            ) : null}
+            {discipline.id === "technology" ? <TechnologyBentoDeco /> : null}
+            <div className="home-bento__anchor-copy">
+              <h3 className="home-bento__anchor-title">{discipline.name}</h3>
+              {discipline.descriptor ? (
+                <p className="home-bento__anchor-descriptor">
+                  {discipline.descriptor}
+                </p>
+              ) : null}
+            </div>
           </motion.div>
         </AnimatePresence>
       )}
@@ -508,6 +651,7 @@ function ServicesBentoGrid({
   categories,
   onPrev,
   onNext,
+  creativeConfettiStateRef,
 }) {
   const discipline = DISCIPLINE_BY_ID[activeDiscipline];
   const inactiveDiscipline = categories.find(
@@ -526,6 +670,7 @@ function ServicesBentoGrid({
         inactiveDiscipline={inactiveDiscipline}
         onPrev={onPrev}
         onNext={onNext}
+        creativeConfettiStateRef={creativeConfettiStateRef}
       />
 
       <AnimatePresence mode="popLayout">
@@ -708,6 +853,11 @@ export default function HomePage() {
   const trackRef = useRef(null);
   const section2Ref = useRef(null);
   const storyTrackRef = useRef(null);
+  const creativeConfettiStateRef = useRef({
+    fired: false,
+    frozen: false,
+    particles: [],
+  });
   const form = useContactForm();
   const [activeDiscipline, setActiveDiscipline] = useState("creative");
 
@@ -726,6 +876,7 @@ export default function HomePage() {
       ];
     });
   }, []);
+
   const {
     scale,
     circleScale,
@@ -938,6 +1089,7 @@ export default function HomePage() {
               categories={SERVICE_CATEGORIES}
               onPrev={goPrevDiscipline}
               onNext={goNextDiscipline}
+              creativeConfettiStateRef={creativeConfettiStateRef}
             />
           </div>
 

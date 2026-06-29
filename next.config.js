@@ -9,7 +9,7 @@ const nextConfig = {
   },
   webpack: (config) => {
     config.module.rules.push({
-      test: /\.(mp4|webm)$/i,
+      test: /\.(mp4|webm|svg)$/i,
       type: "asset/resource",
     });
     return config;
