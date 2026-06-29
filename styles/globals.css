@@ -925,6 +925,31 @@ body.body--menu-open .site-footer {
   background: var(--white);
 }
 
+.home-bento__anchor--technology::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 1;
+  height: 46%;
+  border-radius: inherit;
+  background: linear-gradient(
+    to top,
+    var(--white) 0%,
+    color-mix(in srgb, var(--white) 88%, transparent) 42%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.home-bento__technology-deco {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
 .home-bento__technology-bg {
   position: absolute;
   inset: 0;
@@ -932,21 +957,108 @@ body.body--menu-open .site-footer {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: inherit;
-  pointer-events: none;
 }
 
-.home-bento__technology-bg::after {
-  content: "";
+.home-bento__technology-logos {
   position: absolute;
   inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--white) 94%, transparent) 0%,
-    color-mix(in srgb, var(--white) 62%, transparent) 42%,
-    transparent 72%
-  );
+  z-index: 1;
+}
+
+.home-bento__technology-logo-card {
+  position: absolute;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 0.28rem;
+  border-radius: 0.75rem;
+  background: var(--white);
+  box-shadow:
+    0 8px 22px -6px rgba(17, 17, 17, 0.16),
+    0 3px 8px -4px rgba(17, 17, 17, 0.08);
+}
+
+.home-bento__technology-logo-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.home-bento__technology-logo-card--dark {
+  background: #111;
+  border: 1px solid #111;
+  box-shadow:
+    0 8px 22px -6px rgba(17, 17, 17, 0.28),
+    0 3px 8px -4px rgba(17, 17, 17, 0.14);
+}
+
+.home-bento__technology-logo-card--js {
+  background: #f7df1e;
+  border: 1px solid #f7df1e;
+  box-shadow:
+    0 8px 22px -6px rgba(17, 17, 17, 0.16),
+    0 3px 8px -4px rgba(17, 17, 17, 0.08);
+}
+
+.home-bento__technology-logo-card--float-a {
+  transform: rotate(var(--tile-rotate, 0deg));
+  animation: tech-logo-float-a 5.4s ease-in-out infinite;
+}
+
+.home-bento__technology-logo-card--float-b {
+  transform: rotate(var(--tile-rotate, 0deg));
+  animation: tech-logo-float-b 4.9s ease-in-out infinite;
+}
+
+.home-bento__technology-logo-card--float-c {
+  transform: rotate(var(--tile-rotate, 0deg));
+  animation: tech-logo-float-c 4.5s ease-in-out infinite;
+}
+
+@keyframes tech-logo-float-a {
+  0%,
+  100% {
+    transform: rotate(var(--tile-rotate, 0deg)) translate(0, 0);
+  }
+
+  35% {
+    transform: rotate(var(--tile-rotate, 0deg)) translate(-2px, -3px);
+  }
+
+  70% {
+    transform: rotate(var(--tile-rotate, 0deg)) translate(1.5px, 2.5px);
+  }
+}
+
+@keyframes tech-logo-float-b {
+  0%,
+  100% {
+    transform: rotate(var(--tile-rotate, 0deg)) translate(0, 0);
+  }
+
+  40% {
+    transform: rotate(var(--tile-rotate, 0deg)) translate(2.5px, -2px);
+  }
+
+  75% {
+    transform: rotate(var(--tile-rotate, 0deg)) translate(-2px, 3px);
+  }
+}
+
+@keyframes tech-logo-float-c {
+  0%,
+  100% {
+    transform: rotate(var(--tile-rotate, 0deg)) translate(0, 0);
+  }
+
+  33% {
+    transform: rotate(var(--tile-rotate, 0deg)) translate(-2.5px, 2px);
+  }
+
+  66% {
+    transform: rotate(var(--tile-rotate, 0deg)) translate(2px, -2.5px);
+  }
 }
 
 .confetti-bomb-card {
@@ -967,7 +1079,7 @@ body.body--menu-open .site-footer {
 .home-bento__anchor-layer {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 2;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -1029,7 +1141,7 @@ body.body--menu-open .site-footer {
 
 .home-bento__anchor-copy {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -1055,7 +1167,7 @@ body.body--menu-open .site-footer {
   position: absolute;
   right: clamp(1rem, 2vw, 1.35rem);
   bottom: clamp(1rem, 2vw, 1.35rem);
-  z-index: 1;
+  z-index: 3;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1381,6 +1493,14 @@ body.body--menu-open .site-footer {
     min-height: 14rem;
   }
 
+  .home-bento__anchor--technology {
+    min-height: 16.5rem;
+  }
+
+  .home-bento__technology-logo-card--mobile-hidden {
+    display: none;
+  }
+
   .home-bento__anchor-descriptor {
     max-width: none;
   }
@@ -1422,6 +1542,13 @@ body.body--menu-open .site-footer {
 
   .home-bento__social-phone-float {
     animation: none;
+  }
+
+  .home-bento__technology-logo-card--float-a,
+  .home-bento__technology-logo-card--float-b,
+  .home-bento__technology-logo-card--float-c {
+    animation: none;
+    transform: rotate(var(--tile-rotate, 0deg));
   }
 }
 

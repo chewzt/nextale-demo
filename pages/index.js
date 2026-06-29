@@ -14,6 +14,17 @@ import logoThongKee from "../assets/logolist/thongkeelogo-1-1.png";
 import logoJoyChickenRice from "../assets/logolist/喜悦chickenrice-PhotoRoom-1.png-PhotoRoom-1.png";
 import brandSchemeBg from "../assets/services/brand-identity/brandscheme2.png";
 import technologyBg from "../assets/technology/technology-bg.png";
+import techLogoCursor from "../assets/technology/logolist/cursor.png";
+import techLogoDart from "../assets/technology/logolist/dart.png";
+import techLogoDocker from "../assets/technology/logolist/docker.png";
+import techLogoFirebase from "../assets/technology/logolist/firebase.png";
+import techLogoGithub from "../assets/technology/logolist/github.png";
+import techLogoJavascript from "../assets/technology/logolist/javascript.png";
+import techLogoLaravel from "../assets/technology/logolist/laravel.png";
+import techLogoPhp from "../assets/technology/logolist/php.png";
+import techLogoPython from "../assets/technology/logolist/python.png";
+import techLogoVscode from "../assets/technology/logolist/vscode.png";
+import techLogoVue from "../assets/technology/logolist/vue.png";
 import socialFacebookIcon from "../assets/services/socialmedia/facebook.svg";
 import socialPhonePortrait from "../assets/services/socialmedia/social-phone-portrait.png";
 import socialXiaohongshuIcon from "../assets/services/socialmedia/xiaohongshu.svg";
@@ -413,6 +424,20 @@ const SOCIAL_PHONE_FLOATS = [
   },
 ];
 
+const TECH_LOGO_TILES = [
+  { id: "cursor", src: techLogoCursor, alt: "Cursor", top: "3%", left: "2%", width: "4rem", rotate: -11, z: 2, dark: true },
+  { id: "vue", src: techLogoVue, alt: "Vue", top: "9%", left: "33%", width: "4.35rem", rotate: 6, z: 4 },
+  { id: "github", src: techLogoGithub, alt: "GitHub", top: "1%", right: "2%", width: "3.9rem", rotate: 14, z: 2 },
+  { id: "php", src: techLogoPhp, alt: "PHP", top: "20%", left: "11%", width: "4.1rem", rotate: -8, z: 3, hideOnMobile: true },
+  { id: "javascript", src: techLogoJavascript, alt: "JavaScript", top: "13%", left: "51%", width: "4.5rem", z: 5, variant: "js" },
+  { id: "docker", src: techLogoDocker, alt: "Docker", top: "23%", right: "9%", width: "3.85rem", rotate: -13, z: 3, hideOnMobile: true },
+  { id: "python", src: techLogoPython, alt: "Python", top: "32%", left: "5%", width: "4.2rem", rotate: 9, z: 2 },
+  { id: "laravel", src: techLogoLaravel, alt: "Laravel", top: "27%", left: "39%", width: "3.95rem", rotate: -5, z: 4, hideOnMobile: true },
+  { id: "firebase", src: techLogoFirebase, alt: "Firebase", top: "34%", right: "4%", width: "4.05rem", rotate: 11, z: 3, dark: true },
+  { id: "dart", src: techLogoDart, alt: "Dart", top: "42%", left: "19%", width: "3.8rem", rotate: -9, z: 2 },
+  { id: "vscode", src: techLogoVscode, alt: "VS Code", top: "37%", left: "59%", width: "4.25rem", rotate: 7, z: 4 },
+];
+
 function SocialPhoneMockup() {
   return (
     <div className="home-bento__social-phone" aria-hidden="true">
@@ -469,11 +494,52 @@ function SocialBentoDeco() {
 
 function TechnologyBentoDeco() {
   return (
-    <div
-      className="home-bento__technology-bg"
-      style={{ backgroundImage: `url(${technologyBg.src})` }}
-      aria-hidden="true"
-    />
+    <div className="home-bento__technology-deco" aria-hidden="true">
+      <div
+        className="home-bento__technology-bg"
+        style={{ backgroundImage: `url(${technologyBg.src})` }}
+      />
+      <div className="home-bento__technology-logos">
+        {TECH_LOGO_TILES.map((tile, index) => {
+          const floatVariant = ["a", "b", "c"][index % 3];
+
+          return (
+          <div
+            key={tile.id}
+            className={[
+              "home-bento__technology-logo-card",
+              `home-bento__technology-logo-card--float-${floatVariant}`,
+              tile.dark ? "home-bento__technology-logo-card--dark" : "",
+              tile.variant === "js"
+                ? "home-bento__technology-logo-card--js"
+                : "",
+              tile.hideOnMobile
+                ? "home-bento__technology-logo-card--mobile-hidden"
+                : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            style={{
+              top: tile.top,
+              left: tile.left,
+              right: tile.right,
+              width: tile.width,
+              zIndex: tile.z,
+              "--tile-rotate": `${tile.rotate ?? 0}deg`,
+              animationDelay: `${-(index * 0.55)}s`,
+            }}
+          >
+            <img
+              src={tile.src.src}
+              alt=""
+              width={tile.src.width}
+              height={tile.src.height}
+            />
+          </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -588,9 +654,13 @@ function ServicesAnchorCard({
       ].join(" ")}
       style={{ "--bento-accent": discipline.accent }}
     >
+      {discipline.id === "technology" ? <TechnologyBentoDeco /> : null}
+
       {reduceMotion ? (
         <>
-          {discipline.id === "technology" ? <TechnologyBentoDeco /> : null}
+          {discipline.id === "creative" ? (
+            <ConfettiBombCard stateRef={creativeConfettiStateRef} />
+          ) : null}
           <div className="home-bento__anchor-copy">
             <h3 className="home-bento__anchor-title">{discipline.name}</h3>
             {discipline.descriptor ? (
@@ -611,7 +681,6 @@ function ServicesAnchorCard({
             {discipline.id === "creative" ? (
               <ConfettiBombCard stateRef={creativeConfettiStateRef} />
             ) : null}
-            {discipline.id === "technology" ? <TechnologyBentoDeco /> : null}
             <div className="home-bento__anchor-copy">
               <h3 className="home-bento__anchor-title">{discipline.name}</h3>
               {discipline.descriptor ? (
