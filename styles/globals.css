@@ -925,6 +925,8 @@ body.body--menu-open .site-footer {
   background: var(--white);
 }
 
+.home-bento__anchor--creative .home-bento__anchor-layer::before,
+.home-bento__anchor--creative::after,
 .home-bento__anchor--technology::after {
   content: "";
   position: absolute;
@@ -1160,7 +1162,8 @@ body.body--menu-open .site-footer {
   font-size: clamp(0.95rem, 1.4vw, 1.05rem);
   line-height: 1.5;
   color: var(--text-muted);
-  max-width: 24ch;
+  max-width: 22.5rem;
+  white-space: nowrap;
 }
 
 .home-bento__nav {
@@ -1499,10 +1502,6 @@ body.body--menu-open .site-footer {
 
   .home-bento__technology-logo-card--mobile-hidden {
     display: none;
-  }
-
-  .home-bento__anchor-descriptor {
-    max-width: none;
   }
 
   .home-bento__child {
