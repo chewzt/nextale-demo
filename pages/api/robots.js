@@ -1,4 +1,4 @@
-import { buildRobotsTxt } from "../../lib/seo/robots";
+import { buildRobotsTxt } from "@/lib/seo/robots";
 
 export default function handler(req, res) {
   if (req.method !== "GET") {

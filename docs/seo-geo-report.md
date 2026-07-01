@@ -28,7 +28,7 @@ The canonical site URL is driven by `NEXT_PUBLIC_SITE_URL` and flows through met
 ```
 lib/seo/
 ├── content.js      # Single source of truth: SITE, SERVICES, FAQ, buildLlmsTxt()
-├── metadata.js     # PageHead component + HOME_META / SERVICES_META
+├── metadata.js     # HOME_META / SERVICES_META constants
 ├── robots.js       # buildRobotsTxt()
 └── schemas.js      # buildAgencySchemas() → JSON-LD @graph
 
@@ -51,7 +51,8 @@ public/
 ```mermaid
 flowchart TD
     ENV["NEXT_PUBLIC_SITE_URL"] --> CONTENT["lib/seo/content.js — SITE.url"]
-    CONTENT --> META["lib/seo/metadata.js — PageHead"]
+    CONTENT --> META["lib/seo/metadata.js — meta constants"]
+    CONTENT --> PAGEHEAD["components/seo/PageHead.js"]
     CONTENT --> SCHEMA["lib/seo/schemas.js — JSON-LD"]
     CONTENT --> LLMS["buildLlmsTxt()"]
     CONTENT --> FAQ["FAQ array"]
@@ -117,7 +118,7 @@ async rewrites() {
 
 ### `PageHead` component
 
-Central metadata renderer in `lib/seo/metadata.js`:
+Central metadata renderer in `components/seo/PageHead.js`:
 
 ```js
 export function PageHead({ title, description, path }) {
@@ -438,7 +439,8 @@ No dedicated SEO libraries (`next-seo`, `@vercel/og`, etc.). Implementation is h
 | File | Role |
 |------|------|
 | `lib/seo/content.js` | Site config, services, FAQ, `buildLlmsTxt()` |
-| `lib/seo/metadata.js` | `PageHead`, page meta constants |
+| `lib/seo/metadata.js` | `HOME_META`, `SERVICES_META` constants |
+| `components/seo/PageHead.js` | `PageHead` component |
 | `lib/seo/robots.js` | `buildRobotsTxt()` |
 | `lib/seo/schemas.js` | `buildAgencySchemas()` JSON-LD |
 | `components/seo/JsonLd.js` | JSON-LD script tag |

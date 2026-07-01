@@ -8,7 +8,7 @@ Lightweight design reference for the Nextale marketing site. This document refle
 |-------|--------|
 | Framework | Next.js 14 (Pages Router) |
 | Styling | Single global stylesheet — [`styles/globals.css`](styles/globals.css) |
-| State | React hooks inline per page; shared form hook in [`plugins/formLogic.js`](plugins/formLogic.js) |
+| State | React hooks inline per page; shared form hook in [`hooks/useContactForm.js`](hooks/useContactForm.js) |
 | Fonts | System stack in CSS (`--font-sans`); no Google Fonts |
 
 ## Architecture
@@ -16,15 +16,17 @@ Lightweight design reference for the Nextale marketing site. This document refle
 ```
 pages/_app.js          → Site shell (nav, footer, page wrapper)
 pages/_document.js     → HTML shell (no external fonts)
-pages/index.js         → Landing page (hero scroll, story, capabilities, contact)
+pages/index.js         → Landing page (hero scroll, story, capabilities)
 pages/services.js      → Services hero + creative story scroll
 pages/{work,process,contact}.js → Other subpages
-plugins/formLogic.js   → useContactForm + SERVICES_OPTIONS
-plugins/useStoryScroll.js → Shared pinned story-scroll hook
+hooks/useContactForm.js   → useContactForm + SERVICES_OPTIONS
+hooks/useStoryScroll.js   → useStoryArticleScroll (landing + services)
+components/contact/ContactWizard.js → Contact wizard UI
+lib/mailer.js             → Contact email (API only)
 styles/globals.css     → All tokens, layout, components
 ```
 
-`useScrollHeroTransition` remains inline in `pages/index.js` (landing-only). `useStoryScroll` is shared by home story and services page.
+`useScrollHeroTransition` remains inline in `pages/index.js` (landing-only). `useStoryArticleScroll` drives landing + both services story sections.
 
 ## Typography
 
@@ -80,7 +82,8 @@ Shared primitives in `globals.css`. Compose BEM + `.btn` in markup:
 | `.btn--primary` | Apple blue fill, white text | Form submit, primary CTAs on dark surfaces |
 | `.btn--dark` | `#1d1d1f` fill | Nav CTA, hero primary link |
 | `.btn--secondary` | Transparent + border | Ghost links (hero, explore services) |
-| `.btn--chip` | Small pill, bordered | Service picker on light contact page |
+| `.btn--ghost` | Transparent, muted text | Wizard Back / restart |
+| `.btn--chip` | Small pill, bordered | Service picker in contact wizard |
 
 **Pattern:** No uppercase, no mono, no slide-in hover effects. Hover = background or opacity shift only.
 
@@ -91,10 +94,9 @@ Shared primitives in `globals.css`. Compose BEM + `.btn` in markup:
 | Nav CTA | `site-nav__cta btn btn--dark` |
 | Hero | `home-intro__link btn btn--dark` / `btn btn--secondary` |
 | Capabilities CTA | `home-intro__link btn btn--secondary home-capabilities__cta` |
-| Home contact submit | `home-contact__submit btn btn--primary` |
-| Contact page submit | `contact-form__submit btn btn--primary` |
-| Service chips (light) | `contact-form__service-btn btn btn--chip` |
-| Service chips (dark) | `home-contact__service-btn` (section-specific overrides) |
+| Contact wizard Next/Submit | `contact-wizard__next btn btn--primary` |
+| Contact wizard Back | `contact-wizard__back btn btn--ghost` |
+| Service chips | `contact-wizard__service-btn btn btn--chip` |
 
 ## Navigation
 
@@ -115,19 +117,20 @@ Light Apple-style bar (`--surface-footer`), dark logo (no invert filter), inline
 
 ## Forms
 
-Shared hook: `useContactForm()` in [`plugins/formLogic.js`](plugins/formLogic.js).
+Shared hook: `useContactForm()` in [`hooks/useContactForm.js`](hooks/useContactForm.js). UI: [`components/contact/ContactWizard.js`](components/contact/ContactWizard.js).
 
-| Surface | Background | Input style | Labels |
-|---------|------------|-------------|--------|
-| Home contact (`.home-contact`) | Black | Underline fields | `--font-ui`, muted white |
-| Contact page (`.contact-form`) | Light page | Rounded 12px boxes, Apple focus ring | `--font-ui`, `--text-secondary` |
+`/contact` is a full-screen conversational wizard (Blankslate-style): one question per step, **Page X of 6**, Back / Next navigation, all on a single route.
 
-**Wording (both forms):**
+| Step | Question | Field |
+|------|----------|-------|
+| 0 | Welcome — Start a project | — |
+| 1 | What's your name? | `name` (required) |
+| 2 | How can we reach you? | `email` (required) |
+| 3 | What company is this for? | `company` (optional) |
+| 4 | How can we help? | `services[]` (≥1 chip) |
+| 5 | Thank you | — |
 
-- Your name · Email · Company · Budget range
-- What can we help with? (service chips)
-- Your message
-- Submit · We'll reply within one business day.
+**Input style:** Underline fields on warm `--bg`; large display question typography (`.contact-wizard__question`).
 
 ## Home page sections
 
@@ -137,13 +140,12 @@ Shared hook: `useContactForm()` in [`plugins/formLogic.js`](plugins/formLogic.js
 | Intro | `.home-intro` | Section 2 landing animation |
 | Story | `.home-story-*` | Pinned scrollytelling — **do not regress** (see `.cursor/rules/story-scroll-effect.mdc`) |
 | Capabilities | `.home-capabilities-*` | Two-pillar service grid; pillar names only (no taglines) |
-| Contact | `.home-contact-*` | Black full-bleed form block |
 
-Story scroll constraints:
+Story scroll constraints (landing):
 
-- Track height: `calc(var(--story-beats) * 100vh)`
-- Sticky viewport at `top: var(--nav-h)`
-- One slide active at a time on desktop
+- Pinned track + sticky `.home-story` viewport at `top: var(--nav-h)` (video + rail centered)
+- Track height: content-driven via `useStoryArticleScroll`; rail dot follows scroll progress
+- Right column only: all beats stacked; continuous scroll via `translateY` (no slide crossfade)
 - Below 901px or `prefers-reduced-motion`: static stacked beats
 
 ## Subpages
@@ -153,7 +155,7 @@ Story scroll constraints:
 | Services | `.home-intro`, `.svc-story-*` — landing intro + pinned Creative story (5 beats) |
 | Work | `.portfolio-tabs`, `.portfolio-grid` |
 | Process | `.process-list`, `.process-step`, numbered steps |
-| Contact | `.contact-layout`, `.contact-form` |
+| Contact | `.page--contact-wizard`, `.contact-wizard__*` |
 
 ### Services page
 
@@ -161,7 +163,8 @@ Story scroll constraints:
 
 **Story scroll:**
 
-- **Track:** `.svc-story-track` — `height: calc(var(--story-beats) * 100vh)` (5 beats, Phase 1 Creative only)
+- **Creative track:** `.svc-story-track--article` — article scroll on the right column (`useStoryArticleScroll`); left: Creative label only
+- **Technology track:** `.svc-story-track--article.svc-story-track--technology` — same article scroll (mirrored layout); left: Technology label only
 - **Sticky panel:** `.svc-story` — `align-items: flex-start` (content from top; home story stays center-aligned)
 - **Left:** `.svc-story__category-label` — static "Creative" (unchanged across beats)
 - **Rail:** reuses `.home-story__rail`, `__line`, `__dot`
@@ -181,10 +184,10 @@ Story scroll constraints:
 
 ## Motion
 
-- Scroll-driven state via `requestAnimationFrame` / scroll listeners (`useStoryScroll`, hero commit in `index.js`)
+- Scroll-driven state via `requestAnimationFrame` / scroll listeners (`useStoryArticleScroll` on landing + services, hero commit in `index.js`)
 - `body.is-interaction-locked` during hero commit (disables pointer events on shell)
 - Button hovers are CSS-only (no motion dependency)
-- Story crossfade between beats on desktop
+- Services Creative + Technology: article scroll on right column; landing article scroll
 
 ## Conventions
 
@@ -202,9 +205,11 @@ pages/_app.js          Nav + footer shell
 pages/_document.js     Font loading
 pages/index.js         Landing content + hero scroll hook
 pages/services.js      Services hero + story scroll
-pages/contact.js       Standalone contact page
-plugins/formLogic.js   Form state + validation
-plugins/useStoryScroll.js   Pinned beat scroll hook
+pages/contact.js       Contact wizard page
+hooks/useContactForm.js       Form state + step validation
+hooks/useStoryScroll.js       useStoryArticleScroll (landing + services)
+components/contact/ContactWizard.js   Contact wizard UI
+lib/mailer.js                   Contact email (server)
 design.md              This file
 .cursor/rules/story-scroll-effect.mdc   Story scroll preservation rule
 ```

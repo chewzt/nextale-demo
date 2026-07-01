@@ -1,4 +1,4 @@
-import { buildLlmsTxt } from "../../lib/seo/content";
+import { buildLlmsTxt } from "@/lib/seo/content";
 
 export default function handler(req, res) {
   if (req.method !== "GET") {

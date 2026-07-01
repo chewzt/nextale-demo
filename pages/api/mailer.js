@@ -1,7 +1,7 @@
 import {
   assertMailerConfig,
   sendContactNotification,
-} from "../../plugins/mailer";
+} from "@/lib/mailer";
 
 const SUCCESS_MESSAGE = { message: "Message sent successfully." };
 
@@ -20,11 +20,7 @@ export default async function handler(req, res) {
     return res.status(200).json(SUCCESS_MESSAGE);
   }
 
-  if (
-    !isNonEmptyString(body.name) ||
-    !isNonEmptyString(body.email) ||
-    !isNonEmptyString(body.message)
-  ) {
+  if (!isNonEmptyString(body.name) || !isNonEmptyString(body.email)) {
     return res.status(400).json({ message: "Missing required fields." });
   }
 

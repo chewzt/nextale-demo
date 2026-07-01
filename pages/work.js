@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import desktopVideo from "../assets/landing-desktop-video.mp4";
@@ -91,7 +92,6 @@ function WorkHero() {
   return (
     <section className="home-intro" aria-label="Portfolio introduction">
       <div className="home-intro__inner">
-        <p className="home-intro__eyebrow">Our work</p>
         <h1 className="home-intro__headline">
           Everything from identity to launch — selected work from the Nextale
           studio.
@@ -143,11 +143,16 @@ function WorkMediaTile({ item, isActive }) {
   }
 
   if (item.type === "image") {
-    const imageSrc = typeof item.src === "string" ? item.src : item.src.src;
-
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={imageSrc} alt="" className="work-gallery__img" loading="lazy" />
+      <Image
+        src={item.src}
+        alt=""
+        className="work-gallery__img"
+        fill
+        sizes="(max-width: 900px) 100vw, 42vw"
+        placeholder="blur"
+        priority={isActive}
+      />
     );
   }
 
@@ -233,7 +238,7 @@ function WorkCta() {
 }
 
 export default function WorkPage() {
-  const [activeId, setActiveId] = useState(null);
+  const [activeId, setActiveId] = useState(WORK_PROJECTS[0]?.id ?? null);
 
   const handleToggleTouch = (id) => {
     setActiveId((prev) => (prev === id ? null : id));

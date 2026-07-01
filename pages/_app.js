@@ -46,7 +46,14 @@ export default function App({ Component, pageProps }) {
   }, [menuOpen]);
 
   return (
-    <div className={poppins.variable}>
+    <div
+      className={[
+        poppins.variable,
+        router.pathname === "/contact" ? "app-shell--contact" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>

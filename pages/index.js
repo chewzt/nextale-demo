@@ -29,14 +29,14 @@ import socialFacebookIcon from "../assets/services/socialmedia/facebook.svg";
 import socialPhonePortrait from "../assets/services/socialmedia/social-phone-portrait.png";
 import socialXiaohongshuIcon from "../assets/services/socialmedia/xiaohongshu.svg";
 import socialYoutubeIcon from "../assets/services/socialmedia/youtube.svg";
-import ConfettiBombCard from "../components/ConfettiBombCard";
-import GeoChunk from "../components/seo/GeoChunk";
-import JsonLd from "../components/seo/JsonLd";
-import { FAQ } from "../lib/seo/content";
-import { HOME_META, PageHead } from "../lib/seo/metadata";
-import { buildAgencySchemas } from "../lib/seo/schemas";
-import { ContactForm, useContactForm } from "../plugins/formLogic";
-import { useStoryScroll } from "../plugins/useStoryScroll";
+import ConfettiBombCard from "@/components/ConfettiBombCard";
+import GeoChunk from "@/components/seo/GeoChunk";
+import JsonLd from "@/components/seo/JsonLd";
+import { FAQ } from "@/lib/seo/content";
+import { HOME_META } from "@/lib/seo/metadata";
+import PageHead from "@/components/seo/PageHead";
+import { buildAgencySchemas } from "@/lib/seo/schemas";
+import { useStoryArticleScroll } from "@/hooks/useStoryScroll";
 
 /* ─── Hero scroll transition ─────────────────────────────────── */
 
@@ -922,12 +922,13 @@ export default function HomePage() {
   const trackRef = useRef(null);
   const section2Ref = useRef(null);
   const storyTrackRef = useRef(null);
+  const storySlidesViewportRef = useRef(null);
+  const storySlidesContentRef = useRef(null);
   const creativeConfettiStateRef = useRef({
     fired: false,
     frozen: false,
     particles: [],
   });
-  const form = useContactForm();
   const [activeDiscipline, setActiveDiscipline] = useState("creative");
 
   const goNextDiscipline = useCallback(() => {
@@ -958,9 +959,10 @@ export default function HomePage() {
     isCommitting,
   } = useScrollHeroTransition(trackRef, section2Ref);
 
-  const { activeBeat, dotProgress, isStatic } = useStoryScroll(
+  const { dotProgress, contentOffset, isStatic } = useStoryArticleScroll(
     storyTrackRef,
-    STORY_BEATS.length,
+    storySlidesContentRef,
+    storySlidesViewportRef,
   );
 
   return (
@@ -1079,6 +1081,7 @@ export default function HomePage() {
       <section
         className={[
           "home-story-track",
+          "home-story-track--article",
           isStatic ? "home-story-track--static" : "",
         ].join(" ")}
         aria-label="Who we help"
@@ -1116,16 +1119,22 @@ export default function HomePage() {
               />
             </div>
 
-            <div className="home-story__slides">
-              {STORY_BEATS.map((beat, index) => (
+            <div className="home-story__slides" ref={storySlidesViewportRef}>
+              <div
+                className="home-story__slides-inner"
+                ref={storySlidesContentRef}
+                style={
+                  isStatic
+                    ? undefined
+                    : { transform: `translateY(-${contentOffset}px)` }
+                }
+              >
+              {STORY_BEATS.map((beat) => (
                 <article
                   key={beat.id}
                   className={[
                     "home-story__slide",
                     beat.num ? "home-story__slide--item" : "",
-                    !isStatic && activeBeat === index
-                      ? "home-story__slide--active"
-                      : "",
                     isStatic ? "home-story__slide--static" : "",
                   ].join(" ")}
                 >
@@ -1139,6 +1148,7 @@ export default function HomePage() {
                   )}
                 </article>
               ))}
+              </div>
             </div>
           </div>
         </div>
@@ -1188,22 +1198,6 @@ export default function HomePage() {
           >
             Explore all services
           </Link>
-        </div>
-      </section>
-
-      <section className="home-contact" aria-label="Start a project">
-        <div className="home-contact__inner">
-          <div className="home-contact__sticky">
-            <p className="home-contact__tagline">
-              From Paper
-              <br />
-              to Pixel.
-            </p>
-          </div>
-
-          <div className="home-contact__form-wrap">
-            <ContactForm form={form} variant="home" />
-          </div>
         </div>
       </section>
 

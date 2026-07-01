@@ -21,12 +21,13 @@ import photo12 from "../assets/services/productpicture/photo-12.jpg";
 import photo13 from "../assets/services/productpicture/photo-13.jpg";
 import photo14 from "../assets/services/productpicture/photo-14.jpg";
 import photo15 from "../assets/services/productpicture/photo-15.png";
-import GeoChunk from "../components/seo/GeoChunk";
-import JsonLd from "../components/seo/JsonLd";
-import { FAQ } from "../lib/seo/content";
-import { PageHead, SERVICES_META } from "../lib/seo/metadata";
-import { buildAgencySchemas } from "../lib/seo/schemas";
-import { useStoryScroll } from "../plugins/useStoryScroll";
+import GeoChunk from "@/components/seo/GeoChunk";
+import JsonLd from "@/components/seo/JsonLd";
+import { FAQ } from "@/lib/seo/content";
+import { SERVICES_META } from "@/lib/seo/metadata";
+import PageHead from "@/components/seo/PageHead";
+import { buildAgencySchemas } from "@/lib/seo/schemas";
+import { useStoryArticleScroll } from "@/hooks/useStoryScroll";
 
 // TODO: swap to ../assets/services/web-development/web-01.png when asset is ready
 const webShot = brandShot1;
@@ -122,8 +123,6 @@ const SERVICES_BEATS = [
     images: [],
   },
 ];
-
-const PHOTO_BEAT_INDEX = SERVICES_BEATS.findIndex((beat) => beat.id === "photo");
 
 const CREATIVE_PROCESS_STEPS = [
   {
@@ -267,34 +266,6 @@ function SvcPortfolioStrip({ children }) {
   return (
     <div className="svc-portfolio-strip">
       <p className="svc-portfolio-strip__text">{children}</p>
-    </div>
-  );
-}
-
-function SvcStoryNumRoll({ beats, activeBeat }) {
-  const focusedBeat = beats[activeBeat] ?? beats[0];
-
-  return (
-    <div className="svc-story__num-roll">
-      <div className="svc-story__num-wrapper" aria-hidden="true">
-        <div
-          className="svc-story__num-inner"
-          style={{ "--num-index": activeBeat }}
-        >
-          {beats.map((beat) => (
-            <span
-              key={beat.id}
-              className={[
-                "svc-story__num",
-                `svc-story__num--${beat.id}`,
-              ].join(" ")}
-            >
-              {beat.num}
-            </span>
-          ))}
-        </div>
-      </div>
-      <span className="svc-story__num-sr">{focusedBeat.num}</span>
     </div>
   );
 }
@@ -781,25 +752,67 @@ function ServicesFaq() {
 
 export default function ServicesPage() {
   const trackRef = useRef(null);
+  const creativeSlidesViewportRef = useRef(null);
+  const creativeSlidesContentRef = useRef(null);
   const techTrackRef = useRef(null);
+  const techSlidesViewportRef = useRef(null);
+  const techSlidesContentRef = useRef(null);
   const creativeProcess = useProcessVisibility();
   const techProcess = useProcessVisibility();
-  const { activeBeat, dotProgress, isStatic } = useStoryScroll(
+  const { dotProgress, contentOffset, isStatic } = useStoryArticleScroll(
     trackRef,
-    SERVICES_BEATS.length,
+    creativeSlidesContentRef,
+    creativeSlidesViewportRef,
+    { beatCount: SERVICES_BEATS.length },
+  );
+  const creativeScrollBeat = Math.min(
+    SERVICES_BEATS.length - 1,
+    Math.floor(dotProgress * SERVICES_BEATS.length),
   );
   const {
-    activeBeat: techActiveBeat,
     dotProgress: techDotProgress,
+    contentOffset: techContentOffset,
     isStatic: techIsStatic,
-  } = useStoryScroll(techTrackRef, TECHNOLOGY_BEATS.length);
-  const [portfolioCtaShown, setPortfolioCtaShown] = useState(false);
+  } = useStoryArticleScroll(
+    techTrackRef,
+    techSlidesContentRef,
+    techSlidesViewportRef,
+    { beatCount: TECHNOLOGY_BEATS.length },
+  );
+  const techScrollBeat = Math.min(
+    TECHNOLOGY_BEATS.length - 1,
+    Math.floor(techDotProgress * TECHNOLOGY_BEATS.length),
+  );
+  const revealedCreativeBeatsRef = useRef(new Set());
+  const [revealedCreativeTick, setRevealedCreativeTick] = useState(0);
+  const revealedTechBeatsRef = useRef(new Set());
+  const [revealedTechTick, setRevealedTechTick] = useState(0);
 
   useEffect(() => {
-    if (isStatic || activeBeat >= PHOTO_BEAT_INDEX) {
-      setPortfolioCtaShown(true);
+    if (isStatic) return;
+
+    let changed = false;
+    for (let i = 0; i <= creativeScrollBeat; i++) {
+      if (!revealedCreativeBeatsRef.current.has(i)) {
+        revealedCreativeBeatsRef.current.add(i);
+        changed = true;
+      }
     }
-  }, [activeBeat, isStatic]);
+    if (changed) setRevealedCreativeTick((tick) => tick + 1);
+  }, [creativeScrollBeat, isStatic]);
+
+  useEffect(() => {
+    if (techIsStatic) return;
+
+    let changed = false;
+    for (let i = 0; i <= techScrollBeat; i++) {
+      if (!revealedTechBeatsRef.current.has(i)) {
+        revealedTechBeatsRef.current.add(i);
+        changed = true;
+      }
+    }
+    if (changed) setRevealedTechTick((tick) => tick + 1);
+  }, [techScrollBeat, techIsStatic]);
 
   return (
     <>
@@ -809,7 +822,6 @@ export default function ServicesPage() {
       <main className="page-services">
       <section className="home-intro" aria-label="Services introduction">
         <div className="home-intro__inner">
-          <p className="home-intro__eyebrow">Our services</p>
           <h1 className="home-intro__headline">
             Everything your brand needs, under one roof.
           </h1>
@@ -824,6 +836,7 @@ export default function ServicesPage() {
       <section
         className={[
           "svc-story-track",
+          "svc-story-track--article",
           isStatic ? "svc-story-track--static" : "",
         ].join(" ")}
         aria-label="Creative services"
@@ -834,18 +847,6 @@ export default function ServicesPage() {
           <div className="svc-story__layout">
             <div className="svc-story__category-col">
               <p className="svc-story__category-label">{CATEGORY_LABEL}</p>
-              <p
-                className={[
-                  "svc-story__portfolio-cta",
-                  portfolioCtaShown ? "svc-story__portfolio-cta--visible" : "",
-                ].join(" ")}
-                aria-hidden={!portfolioCtaShown && !isStatic}
-              >
-                Curious what we&apos;ve made?{" "}
-                <Link href={PORTFOLIO_HREF} className="home-story__inline-link">
-                  See our work
-                </Link>
-              </p>
             </div>
 
             <div className="home-story__rail svc-story__rail" aria-hidden="true">
@@ -856,44 +857,46 @@ export default function ServicesPage() {
               />
             </div>
 
-            <div
-              className={[
-                "svc-story__slides",
-                !isStatic ? "svc-story__slides--pinned" : "",
-              ].join(" ")}
-            >
-              {!isStatic ? (
-                <SvcStoryNumRoll
-                  beats={SERVICES_BEATS}
-                  activeBeat={activeBeat}
-                />
-              ) : null}
+            <div className="svc-story__slides" ref={creativeSlidesViewportRef}>
+              <div
+                className="svc-story__slides-inner"
+                ref={creativeSlidesContentRef}
+                style={
+                  isStatic
+                    ? undefined
+                    : { transform: `translateY(-${contentOffset}px)` }
+                }
+              >
+              {SERVICES_BEATS.map((beat, index) => {
+                const creativeBeatRevealed =
+                  isStatic || revealedCreativeBeatsRef.current.has(index);
+                void revealedCreativeTick;
 
-              {SERVICES_BEATS.map((beat, index) => (
+                return (
                 <article
                   key={beat.id}
                   className={[
                     "svc-story__slide",
                     `svc-story__slide--${beat.id}`,
-                    !isStatic && activeBeat === index
+                    !isStatic && creativeBeatRevealed
                       ? "svc-story__slide--active"
                       : "",
                     isStatic ? "svc-story__slide--static" : "",
                   ].join(" ")}
                 >
-                  <ServiceSlideHeader beat={beat} pinned={!isStatic} />
+                  <ServiceSlideHeader beat={beat} pinned={false} />
 
                   {beat.type === "social" ? (
                     <SocialReelStrip
                       beat={beat}
-                      isActive={!isStatic && activeBeat === index}
+                      isActive={!isStatic && creativeScrollBeat === index}
                     />
                   ) : null}
 
                   {beat.type === "video" ? (
                     <VideoCarousel
                       beat={beat}
-                      isActive={!isStatic && activeBeat === index}
+                      isActive={!isStatic && creativeScrollBeat === index}
                     />
                   ) : null}
 
@@ -952,7 +955,9 @@ export default function ServicesPage() {
                     </div>
                   ) : null}
                 </article>
-              ))}
+                );
+              })}
+              </div>
             </div>
           </div>
         </div>
@@ -968,6 +973,7 @@ export default function ServicesPage() {
       <section
         className={[
           "svc-story-track",
+          "svc-story-track--article",
           "svc-story-track--technology",
           techIsStatic ? "svc-story-track--static" : "",
         ].join(" ")}
@@ -977,48 +983,54 @@ export default function ServicesPage() {
       >
         <div className="svc-story">
           <div className="svc-story__layout svc-story__layout--mirror">
-            <p className="svc-story__category-label">{TECHNOLOGY_LABEL}</p>
+            <div className="svc-story__slides" ref={techSlidesViewportRef}>
+              <div
+                className="svc-story__slides-inner"
+                ref={techSlidesContentRef}
+                style={
+                  techIsStatic
+                    ? undefined
+                    : { transform: `translateY(-${techContentOffset}px)` }
+                }
+              >
+              {TECHNOLOGY_BEATS.map((beat, index) => {
+                const techBeatRevealed =
+                  techIsStatic || revealedTechBeatsRef.current.has(index);
+                void revealedTechTick;
 
-            <div className="home-story__rail svc-story__rail" aria-hidden="true">
-              <span className="home-story__line" />
-              <span
-                className="home-story__dot"
-                style={{ top: `${techDotProgress * 100}%` }}
-              />
-            </div>
-
-            <div
-              className={[
-                "svc-story__slides",
-                !techIsStatic ? "svc-story__slides--pinned" : "",
-              ].join(" ")}
-            >
-              {!techIsStatic ? (
-                <SvcStoryNumRoll
-                  beats={TECHNOLOGY_BEATS}
-                  activeBeat={techActiveBeat}
-                />
-              ) : null}
-
-              {TECHNOLOGY_BEATS.map((beat, index) => (
+                return (
                 <article
                   key={beat.id}
                   className={[
                     "svc-story__slide",
                     `svc-story__slide--${beat.id}`,
-                    !techIsStatic && techActiveBeat === index
+                    !techIsStatic && techBeatRevealed
                       ? "svc-story__slide--active"
                       : "",
                     techIsStatic ? "svc-story__slide--static" : "",
                   ].join(" ")}
                 >
-                  <ServiceSlideHeader beat={beat} pinned={!techIsStatic} />
+                  <ServiceSlideHeader beat={beat} pinned={false} />
 
                   {beat.type === "showcase" ? (
                     <TechShowcase src={beat.image} />
                   ) : null}
                 </article>
-              ))}
+                );
+              })}
+              </div>
+            </div>
+
+            <div className="home-story__rail svc-story__rail" aria-hidden="true">
+              <span className="home-story__line" />
+              <span
+                className="svc-story__dot"
+                style={{ top: `${techDotProgress * 100}%` }}
+              />
+            </div>
+
+            <div className="svc-story__category-col">
+              <p className="svc-story__category-label">{TECHNOLOGY_LABEL}</p>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatedGroup } from "../plugins/AnimatedGroup";
+import { AnimatedGroup } from "@/components/AnimatedGroup";
 
 const DEMO_ITEMS = ["Branding", "Social", "Video", "UI/UX", "Website", "Mobile"];
 

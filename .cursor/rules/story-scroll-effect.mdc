@@ -10,11 +10,11 @@ The **home-story** scrollytelling section is the preferred audience/intro patter
 
 ## What to preserve
 
-- **Pinned scroll track**: `height: calc(var(--story-beats) * 100vh)` on `.home-story-track`
-- **Sticky viewport**: `.home-story` sticks at `top: var(--nav-h)` while the user scrolls through beats
-- **Sticky left video**: portrait reel with rounded corners; do not remove or shrink without reason
-- **Dashed rail + moving dot**: `.home-story__rail`, dashed `.home-story__line`, `.home-story__dot` driven by `dotProgress`
-- **One slide at a time**: only `.home-story__slide--active` visible on desktop; crossfade between beats
+- **Pinned scroll track**: tall track while reading; height driven by right-column content (fallback `calc(var(--story-beats) * 100vh)`)
+- **Sticky viewport**: `.home-story` sticks at `top: var(--nav-h)` with video + rail vertically centered
+- **Sticky left video**: portrait reel with rounded corners; stays vertically centered in the pinned panel
+- **Dashed rail + moving dot**: `.home-story__rail`, dashed `.home-story__line`, `.home-story__dot` driven by `dotProgress` (scrollbar behavior)
+- **Article scroll on right only**: all beats stacked in `.home-story__slides-inner`; `translateY` driven by scroll — no crossfade or beat swap
 - **Single page scroll**: no nested scroll containers inside the section
 - **Large display typography**: `.home-story__copy` / `.home-story__item` use `font-display`, ~`clamp(1.45rem, 2.65vw, 2.15rem)`
 
@@ -23,9 +23,9 @@ The **home-story** scrollytelling section is the preferred audience/intro patter
 | Piece | Location |
 |-------|----------|
 | Beats + markup | `pages/index.js` → `STORY_BEATS`, `.home-story-*` |
-| Scroll logic | `pages/index.js` → `useStoryScroll` (inline) |
+| Scroll logic | `hooks/useStoryScroll.js` → `useStoryArticleScroll` |
 | Hero scroll logic | `pages/index.js` → `useScrollHeroTransition` (inline) |
-| Styles | `styles/globals.css` → `.home-story-*` block |
+| Styles | `styles/globals.css` → `.home-story-*`, `.home-story-track--article` |
 
 ## Beat sequence (reference)
 
@@ -37,10 +37,11 @@ The **home-story** scrollytelling section is the preferred audience/intro patter
 
 ## Static / mobile
 
-Below 901px or `prefers-reduced-motion`: `.home-story-track--static` — all beats stacked, no pin, no slide swap.
+Below 901px or `prefers-reduced-motion`: `.home-story-track--static` — all beats stacked, no pin, rail hidden.
 
 ## When extending
 
-- Add beats → update `STORY_BEATS`, `--story-beats` auto from length, keep one-viewport-per-beat scroll distance
-- Do not reintroduce dual scroll (fixed panel + `overflow-y: auto`)
-- Landing-page-only logic stays in `pages/index.js` until a second page needs it
+- Add beats → update `STORY_BEATS` only; track height grows with content
+- Do not reintroduce dual scroll (fixed panel + `overflow-y: auto`) or beat-by-beat slide swap on landing
+- Services Creative + Technology use the same article-scroll pattern (`pages/services.js`, `.svc-story-track--article`)
+- Landing-page-only hero logic stays in `pages/index.js`
